@@ -17,8 +17,8 @@ alter table public.sources enable row level security;
 
 create policy "user can manage own sources"
 on public.sources for all
-using (uid() = user_id)
-with check (uid() = user_id);
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
 
 -- Auto-seed sumber default saat user baru mendaftar
 create or replace function seed_default_sources() returns trigger as $$
@@ -109,15 +109,15 @@ alter table public.application_status_history enable row level security;
 
 create policy "user can manage own applications"
 on public.job_applications for all
-using (uid() = user_id)
-with check (uid() = user_id);
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
 
 create policy "user can view own status history"
 on public.application_status_history for all
 using (
   exists (
     select 1 from public.job_applications ja
-    where ja.id = application_id and ja.user_id = uid()
+    where ja.id = application_id and ja.user_id = auth.uid()
   )
 );
 
@@ -135,7 +135,7 @@ language sql stable security definer as $$
   select ja.id, ja.company_name, ja.role_title, ja.applied_date, ja.current_status,
          similarity(ja.company_name, p_company) as score
   from public.job_applications ja
-  where ja.user_id = uid()
+  where ja.user_id = auth.uid()
     and similarity(ja.company_name, p_company) > 0.4
   order by score desc
   limit 5;
