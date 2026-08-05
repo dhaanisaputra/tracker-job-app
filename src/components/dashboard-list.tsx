@@ -1,0 +1,208 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { useQuery } from '@tanstack/react-query'
+import { Search, Loader2, CheckSquare, Square, Trash2 } from 'lucide-react'
+import { insforge } from '@/lib/browser-client'
+import { STATUSES, STATUS_COLORS } from '@/lib/types'
+import type { ApplicationWithSource, Source } from '@/lib/types'
+
+const PAGE_SIZE = 15
+
+function StatusBadge({ status }: { status: string }) {
+  return (
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_COLORS[status] ?? 'bg-stone/20 text-stone'}`}>
+      {status}
+    </span>
+  )
+}
+
+export function DashboardList({ sources }: { sources: Source[] }) {
+  const [search, setSearch] = useState('')
+  const [debounced, setDebounced] = useState('')
+  const [status, setStatus] = useState('')
+  const [source, setSource] = useState('')
+  const [page, setPage] = useState(0)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+
+  // ponytail: simple debounce via timeout
+  const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | undefined>()
+  function onSearch(v: string) {
+    setSearch(v)
+    clearTimeout(timer)
+    setTimer(setTimeout(() => { setDebounced(v); setPage(0) }, 350))
+  }
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['applications', debounced, status, source, page],
+    queryFn: async () => {
+      let q = insforge.database.from('job_applications').select('*, sources(name)', { count: 'exact' }).order('applied_date', { ascending: false })
+      if (debounced) {
+        q = q.or(`company_name.ilike.%${debounced}%,role_title.ilike.%${debounced}%`)
+      }
+      if (status) q = q.eq('current_status', status)
+      if (source) q = q.eq('source_id', source)
+      q = q.range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
+      const res = await q
+      return { items: (res.data ?? []) as ApplicationWithSource[], count: res.count ?? 0 }
+    },
+  })
+
+  const items = data?.items ?? []
+  const totalPages = data ? Math.max(1, Math.ceil(data.count / PAGE_SIZE)) : 1
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  async function bulkDelete() {
+    if (selected.size === 0) return
+    if (!window.confirm(`Hapus ${selected.size} lamaran terpilih?`)) return
+    await insforge.database.from('job_applications').delete().in('id', [...selected])
+    setSelected(new Set())
+    refetch()
+  }
+
+  // ponytail: single shared status-update menu for bulk rows
+  async function bulkStatus(s: string) {
+    if (selected.size === 0) return
+    await insforge.database.from('job_applications').update({ current_status: s }).in('id', [...selected])
+    setSelected(new Set())
+    refetch()
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone" />
+          <input
+            value={search}
+            onChange={(e) => onSearch(e.target.value)}
+            placeholder="Cari perusahaan / role..."
+            className="w-full rounded-lg border border-stone/40 bg-white py-2 pl-9 pr-3 text-sm text-ink outline-none focus:border-trailblaze"
+          />
+        </div>
+        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(0) }} className="rounded-lg border border-stone/40 bg-white px-2 py-2 text-sm">
+          <option value="">Status</option>
+          {STATUSES.map((s) => (
+            <option key={s}>{s}</option>
+          ))}
+        </select>
+        <select value={source} onChange={(e) => { setSource(e.target.value); setPage(0) }} className="rounded-lg border border-stone/40 bg-white px-2 py-2 text-sm">
+          <option value="">Sumber</option>
+          {sources.map((s) => (
+            <option key={s.id} value={s.id}>{s.name}</option>
+          ))}
+        </select>
+      </div>
+
+      {selected.size > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg bg-denim/10 p-2 text-sm">
+          <span className="px-1 font-medium text-denim">{selected.size} dipilih</span>
+          <button onClick={bulkDelete} className="inline-flex items-center gap-1 rounded-md bg-ember px-2 py-1 text-white"><Trash2 size={14} /> Hapus</button>
+          <select onChange={(e) => e.target.value && bulkStatus(e.target.value)} defaultValue="" className="rounded-md border border-stone/40 bg-white px-2 py-1 text-sm">
+            <option value="">Ubah status...</option>
+            {STATUSES.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="flex justify-center py-10 text-stone"><Loader2 className="animate-spin" /></div>
+      ) : items.length === 0 ? (
+        <div className="rounded-xl border border-stone/30 bg-white p-8 text-center">
+          <p className="font-display text-lg font-bold text-ink">Belum ada lamaran</p>
+          <p className="mt-1 text-sm text-stone">Mulai catat lamaran pertamamu, atau ubah pencarian.</p>
+          <Link href="/lamaran/baru" className="mt-4 inline-block rounded-lg bg-trailblaze px-4 py-2 text-sm font-semibold text-white">
+            Tambah lamaran
+          </Link>
+        </div>
+      ) : (
+        <>
+          {/* Mobile: card list */}
+          <ul className="divide-y divide-stone/20 md:hidden">
+            {items.map((app) => (
+              <li key={app.id} className="flex items-center gap-3 rounded-xl border border-stone/30 bg-white p-3">
+                <button onClick={() => toggleSelect(app.id)} className="text-stone">
+                  {selected.has(app.id) ? <CheckSquare size={18} className="text-trailblaze" /> : <Square size={18} />}
+                </button>
+                <Link href={`/lamaran/${app.id}`} className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-ink">{app.company_name}</p>
+                  <p className="truncate text-sm text-stone">{app.role_title}</p>
+                  <div className="mt-1 flex items-center gap-2 text-xs text-stone">
+                    <StatusBadge status={app.current_status} />
+                    <span>{app.sources?.name}</span>
+                    <span>{new Date(app.applied_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</span>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          {/* Desktop: table */}
+          <div className="hidden overflow-hidden rounded-xl border border-stone/30 bg-white md:block">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-stone/20 text-left text-xs uppercase tracking-wide text-stone">
+                  <th className="p-3" />
+                  <th className="p-3">Perusahaan</th>
+                  <th className="p-3">Role</th>
+                  <th className="p-3">Sumber</th>
+                  <th className="p-3">Tanggal</th>
+                  <th className="p-3">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((app) => (
+                  <tr key={app.id} className="border-b border-stone/10 last:border-0 hover:bg-stone/5">
+                    <td className="p-3">
+                      <button onClick={() => toggleSelect(app.id)} className="text-stone">
+                        {selected.has(app.id) ? <CheckSquare size={16} className="text-trailblaze" /> : <Square size={16} />}
+                      </button>
+                    </td>
+                    <td className="p-3 font-semibold text-ink">
+                      <Link href={`/lamaran/${app.id}`} className="hover:underline">{app.company_name}</Link>
+                    </td>
+                    <td className="p-3 text-stone">{app.role_title}</td>
+                    <td className="p-3 text-stone">{app.sources?.name}</td>
+                    <td className="p-3 font-mono text-stone">{app.applied_date}</td>
+                    <td className="p-3"><StatusBadge status={app.current_status} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between text-sm">
+              <button
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="rounded-lg border border-stone/40 px-3 py-1.5 disabled:opacity-40"
+              >
+                Sebelumnya
+              </button>
+              <span className="text-stone">Hal {page + 1} / {totalPages}</span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={page >= totalPages - 1}
+                className="rounded-lg border border-stone/40 px-3 py-1.5 disabled:opacity-40"
+              >
+                Berikutnya
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
