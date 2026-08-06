@@ -15,7 +15,7 @@ export default function SignInPage() {
         </div>
         <h1 className="font-display text-2xl font-bold text-ink mb-1">Masuk untuk melacak lamaran</h1>
         <p className="text-sm text-stone mb-8">
-          Masukkan email kamu — kami kirim kode masuk sekali pakai.
+          Masukkan email kamu, kami kirim kode masuk sekali pakai.
         </p>
 
         <form action={action} className="space-y-4">
@@ -26,7 +26,7 @@ export default function SignInPage() {
               name="email"
               required
               autoComplete="email"
-              className="w-full rounded-lg border border-stone/40 bg-white px-3 py-2 text-sm text-ink outline-none focus:border-trailblaze"
+              className="field"
               placeholder="kamu@contoh.com"
             />
           </label>

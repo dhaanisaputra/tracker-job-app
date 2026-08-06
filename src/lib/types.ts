@@ -47,6 +47,17 @@ export type ApplicationWithSource = JobApplication & {
   sources: { name: string } | null
 }
 
+export type Profile = {
+  id: string
+  full_name?: string | null
+  target_role?: string | null
+  linkedin_url?: string | null
+  portfolio_url?: string | null
+  salary_expectation?: number | null
+  phone?: string | null
+  updated_at?: string | null
+}
+
 export type StatusHistory = {
   id: string
   status: string

@@ -11,6 +11,7 @@ export async function deleteApplication(formData: FormData) {
     .from('job_applications')
     .delete()
     .eq('id', id)
+  revalidatePath('/lamaran')
   revalidatePath('/dashboard')
-  redirect('/dashboard')
+  redirect('/lamaran')
 }

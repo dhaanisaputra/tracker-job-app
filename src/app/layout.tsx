@@ -31,9 +31,17 @@ export default function RootLayout({
 }) {
   return (
     <html
-      lang="en"
+      lang="id"
+      suppressHydrationWarning
       className={`${unbounded.variable} ${jakarta.variable} ${plexMono.variable} bg-paper text-ink h-full antialiased`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <QueryProvider>{children}</QueryProvider>
       </body>

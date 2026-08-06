@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { ApplicationForm } from '@/components/application-form'
+import { PageHeader } from '@/components/page-header'
 import { getSources } from '@/lib/queries'
 import { serverDb } from '@/lib/server-db'
 import type { JobApplication } from '@/lib/types'
@@ -19,7 +20,7 @@ export default async function EditApplicationPage({ params }: { params: Promise<
       <Link href={`/lamaran/${id}`} className="mb-4 inline-flex items-center gap-1 text-sm text-stone hover:text-ink">
         <ArrowLeft size={16} /> Kembali
       </Link>
-      <h1 className="mb-6 font-display text-2xl font-bold">Edit Lamaran</h1>
+      <PageHeader title="Edit Lamaran" description="Perbarui detail lamaran kamu." />
       <ApplicationForm sources={sources} initial={application} />
     </main>
   )

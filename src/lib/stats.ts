@@ -1,64 +1,79 @@
 import { serverDb } from '@/lib/server-db'
+import { calcStreak } from '@/lib/streak'
 
-// ponytail: aggregation in JS, not a deployed Edge Function; same queries as PRD 8.1
-export async function getDashboardStats() {
+export type StatsRange = '7d' | '30d' | 'all'
+
+export type Stats = {
+  total: number
+  interviews: number
+  rejected: number
+  streak: number
+  growth: { labels: string[]; values: number[] }
+  funnel: { labels: string[]; values: number[] }
+  distribution: { name: string; value: number }[]
+}
+
+const FUNNEL_STAGES = ['Applied', 'Screening', 'HR Interview', 'Technical Interview', 'Offer', 'Accepted']
+const INTERVIEW_STATUSES = ['HR Interview', 'Technical Interview']
+
+export async function getStats(range: StatsRange): Promise<Stats> {
   const db = await serverDb()
 
-  const [datesRes, statusRes] = await Promise.all([
-    db.from('job_applications').select('applied_date, sources(name)'),
+  const now = new Date()
+  const cutoff = range === 'all' ? new Date(0) : new Date(now.getTime() - (range === '7d' ? 7 : 30) * 86400000)
+
+  const [appsRes, historyRes] = await Promise.all([
+    db.from('job_applications').select('id, applied_date, current_status, sources(name)'),
     db.from('application_status_history').select('status, application_id'),
   ])
 
-  // Growth: weekly counts, last 8 weeks
-  const cutoff = new Date()
-  cutoff.setDate(cutoff.getDate() - 7 * 8)
-  const weekCounts = new Map<string, number>()
-  for (const a of datesRes.data ?? []) {
+  const apps = (appsRes.data ?? []) as { id: string; applied_date: string; current_status: string; sources?: { name?: string | null } | null }[]
+  const inRange = apps.filter((a) => {
     const d = new Date(a.applied_date)
-    if (d < cutoff) continue
-    const key = startOfWeek(d).toISOString().slice(0, 10)
-    weekCounts.set(key, (weekCounts.get(key) ?? 0) + 1)
-  }
-  const weeks = [...weekCounts.keys()].sort()
-  const growth = {
-    labels: weeks,
-    values: weeks.map((w) => weekCounts.get(w) ?? 0),
-  }
+    return range === 'all' || d >= cutoff
+  })
 
-  // Success rate: distinct applications per stage reached (from history)
-  const reached = new Map<string, number>()
-  const sourceCounts = new Map<string, number>()
-  for (const h of statusRes.data ?? []) {
-    reached.set(h.status, (reached.get(h.status) ?? 0) + 1)
-  }
-  // Distribution by source
-  for (const a of datesRes.data ?? []) {
-    const name = (a as { sources?: { name?: string } | null }).sources?.name
-    if (name) sourceCounts.set(name, (sourceCounts.get(name) ?? 0) + 1)
-  }
-  const total = datesRes.data?.length ?? 1
+  const total = inRange.length
+  const interviews = inRange.filter((a) => INTERVIEW_STATUSES.includes(a.current_status)).length
+  const rejected = inRange.filter((a) => a.current_status === 'Rejected').length
 
-  const successRate = {
-    labels: ['Applied', 'Screening', 'HR Interview', 'Technical Interview', 'Offer', 'Accepted'],
-    values: ['Applied', 'Screening', 'HR Interview', 'Technical Interview', 'Offer', 'Accepted'].map(
-      (s) => Math.round(((reached.get(s) ?? 0) / total) * 100),
-    ),
+  const streak = calcStreak(apps.map((a) => a.applied_date))
+
+  // growth: last 8 buckets, week-aligned for 30d/all, day-aligned for 7d
+  const buckets = range === '7d' ? 7 : 8
+  const stepMs = range === '7d' ? 86400000 : 7 * 86400000
+  const end = new Date()
+  end.setHours(0, 0, 0, 0)
+  const labels: string[] = []
+  const values: number[] = []
+  for (let i = buckets - 1; i >= 0; i--) {
+    const bucketEnd = new Date(end.getTime() - i * stepMs)
+    const bucketStart = new Date(bucketEnd.getTime() - stepMs)
+    labels.push(range === '7d' ? bucketStart.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) : `M${buckets - i}`)
+    values.push(apps.filter((a) => { const d = new Date(a.applied_date); return d >= bucketStart && d < bucketEnd }).length)
   }
 
-  const distribution = {
-    labels: [...sourceCounts.keys()],
-    values: [...sourceCounts.values()],
+  // funnel: distinct in-range apps that ever reached each stage
+  const inRangeIds = new Set(inRange.map((a) => a.id as string))
+  const reached = new Map<string, Set<string>>()
+  for (const h of (historyRes.data ?? []) as { status: string; application_id: string }[]) {
+    if (!inRangeIds.has(h.application_id)) continue
+    if (!reached.has(h.status)) reached.set(h.status, new Set())
+    reached.get(h.status)!.add(h.application_id)
+  }
+  const base = Math.max(1, total)
+  const funnel = {
+    labels: FUNNEL_STAGES,
+    values: FUNNEL_STAGES.map((s) => Math.round(((reached.get(s)?.size ?? 0) / base) * 100)),
   }
 
-  return { growth, successRate, distribution }
-}
+  // distribution by source (in-range)
+  const src = new Map<string, number>()
+  for (const a of inRange) {
+    const name = a.sources?.name
+    if (name) src.set(name, (src.get(name) ?? 0) + 1)
+  }
+  const distribution = [...src.entries()].map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value)
 
-export const dynamic = 'force-dynamic'
-
-function startOfWeek(d: Date) {
-  const copy = new Date(d)
-  const day = (copy.getDay() + 6) % 7 // Monday
-  copy.setDate(copy.getDate() - day)
-  copy.setHours(0, 0, 0, 0)
-  return copy
+  return { total, interviews, rejected, streak, growth: { labels, values }, funnel, distribution }
 }

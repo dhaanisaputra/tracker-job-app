@@ -5,7 +5,7 @@ export function StreakTrail({ streak, dates, todayCount }: { streak: number; dat
   const hasToday = new Set(dates.map((d) => d.slice(0, 10))).has(today)
 
   return (
-    <div className="rounded-xl border border-stone/30 bg-white p-4">
+    <div className="rounded-xl border border-line bg-surface p-4 shadow-card">
       <div className="flex items-center gap-2">
         <Flame size={22} className={streak > 0 ? 'text-trailblaze' : 'text-stone'} fill="currentColor" />
         <span className="font-display text-2xl font-bold text-ink">{streak}</span>

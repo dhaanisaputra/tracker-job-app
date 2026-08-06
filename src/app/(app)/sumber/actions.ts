@@ -23,7 +23,10 @@ export async function updateSource(formData: FormData) {
   const name = String(formData.get('name') ?? '').trim()
   if (!id || !name) return
 
-  await (await db()).from('sources').update({ name }).eq('id', id)
+  const { error } = await (await db()).from('sources').update({ name }).eq('id', id)
+  if (error) {
+    redirect(`/sumber?err=${encodeURIComponent(error.message)}`)
+  }
   revalidatePath('/sumber')
 }
 

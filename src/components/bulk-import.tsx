@@ -8,6 +8,8 @@ import { FileUp, Loader2 } from 'lucide-react'
 import { insforge } from '@/lib/browser-client'
 import { STATUSES } from '@/lib/types'
 import type { Source } from '@/lib/types'
+import { Modal } from '@/components/modal'
+import { toast } from '@/components/toast'
 
 type Row = {
   company_name: string
@@ -101,6 +103,7 @@ export function BulkImport({ sources }: { sources: Source[] }) {
       setError(err.message)
       return
     }
+    toast(`${valid.length} lamaran diimpor`)
     router.push('/dashboard')
     router.refresh()
   }
@@ -110,7 +113,7 @@ export function BulkImport({ sources }: { sources: Source[] }) {
       {rows.length === 0 ? (
         <button
           onClick={() => inputRef.current?.click()}
-          className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-stone/40 bg-white p-10 text-stone hover:border-trailblaze"
+          className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-line bg-surface p-10 text-stone shadow-card hover:border-trailblaze"
         >
           {parsing ? <Loader2 className="animate-spin" /> : <FileUp size={28} />}
           <span className="text-sm font-medium">{parsing ? 'Membaca file...' : 'Pilih file .xlsx atau .csv'}</span>
@@ -119,9 +122,9 @@ export function BulkImport({ sources }: { sources: Source[] }) {
       ) : (
         <div className="space-y-3">
           <p className="text-sm text-stone">
-            {rows.length} baris dibaca. Baris kuning terindikasi duplikat — uncheck bila tak ingin diimport.
+            {rows.length} baris dibaca. Baris kuning terindikasi duplikat, uncheck bila tak ingin diimport.
           </p>
-          <div className="max-h-96 overflow-auto rounded-xl border border-stone/30 bg-white">
+          <div className="max-h-96 overflow-auto rounded-xl border border-line bg-surface shadow-card">
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-paper">
                 <tr className="text-left text-xs uppercase tracking-wide text-stone">
@@ -134,7 +137,7 @@ export function BulkImport({ sources }: { sources: Source[] }) {
               </thead>
               <tbody>
                 {rows.map((r, i) => (
-                  <tr key={i} className={`border-t border-stone/10 ${r.dup ? 'bg-yellow-100/60' : ''}`}>
+                  <tr key={i} className={`border-t border-line ${r.dup ? 'bg-yellow-100/60' : ''}`}>
                     <td className="p-2">
                       <input type="checkbox" checked={r.checked} onChange={() => setRows((prev) => prev.map((x, j) => (j === i ? { ...x, checked: !x.checked } : x)))} />
                     </td>
@@ -147,10 +150,9 @@ export function BulkImport({ sources }: { sources: Source[] }) {
               </tbody>
             </table>
           </div>
-          {error && <p className="rounded-lg bg-ember/10 px-3 py-2 text-sm text-ember">{error}</p>}
           <div className="flex gap-2">
-            <button onClick={() => { setRows([]); if (inputRef.current) inputRef.current.value = '' }} className="rounded-lg border border-stone/40 px-4 py-2 text-sm">Kembali</button>
-            <button onClick={doImport} disabled={importing} className="flex-1 rounded-lg bg-trailblaze px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+            <button onClick={() => { setRows([]); if (inputRef.current) inputRef.current.value = '' }} className="btn-secondary">Kembali</button>
+            <button onClick={doImport} disabled={importing} className="btn-primary flex-1">
               {importing ? 'Mengimport...' : `Import ${rows.filter((r) => r.checked).length} lamaran`}
             </button>
           </div>
@@ -164,6 +166,19 @@ export function BulkImport({ sources }: { sources: Source[] }) {
         className="hidden"
         onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
       />
+
+      <Modal open={!!error} onClose={() => setError('')} title="Gagal import">
+        <p className="text-sm text-ember">{error}</p>
+        <div className="mt-5 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setError('')}
+            className="rounded-lg bg-trailblaze px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+          >
+            Tutup
+          </button>
+        </div>
+      </Modal>
     </div>
   )
 }

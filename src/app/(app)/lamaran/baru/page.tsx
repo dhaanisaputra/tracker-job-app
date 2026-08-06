@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { ApplicationForm } from '@/components/application-form'
+import { PageHeader } from '@/components/page-header'
 import { getSources } from '@/lib/queries'
 
 export default async function NewApplicationPage() {
@@ -11,7 +12,7 @@ export default async function NewApplicationPage() {
       <Link href="/dashboard" className="mb-4 inline-flex items-center gap-1 text-sm text-stone hover:text-ink">
         <ArrowLeft size={16} /> Kembali
       </Link>
-      <h1 className="mb-6 font-display text-2xl font-bold">Tambah Lamaran</h1>
+      <PageHeader title="Tambah Lamaran" description="Catat lamaran baru yang kamu kirim." />
       <ApplicationForm sources={sources} />
     </main>
   )

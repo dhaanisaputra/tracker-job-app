@@ -1,27 +1,100 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f6f3;
-  --foreground: #201e1b;
+  --nav-w: 16rem;
+  --surface: #ffffff;
+  --surface-muted: #f3f1ec;
+  --paper: #f7f6f3;
+  --ink: #201e1b;
+  --stone: #8b887f;
+  --line: #e3e0d6;
+  --shadow-card: 0 4px 20px rgba(32, 30, 27, 0.04);
+}
+
+.dark {
+  --surface: #1f1d19;
+  --surface-muted: #26231f;
+  --paper: #16150f;
+  --ink: #f2efe9;
+  --stone: #a39f93;
+  --line: #3a362e;
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
   --font-sans: var(--font-jakarta);
+  --font-display: var(--font-display);
   --font-mono: var(--font-mono);
 
-  /* Brand / primary */
+  /* Brand / primary (fixed, no theme flip) */
   --color-trailblaze: #ff7a33;
   --color-moss: #1f7a5c;
   --color-denim: #2e6e8e;
   --color-ember: #d14343;
-  --color-paper: #f7f6f3;
-  --color-ink: #201e1b;
-  --color-stone: #8b887f;
+
+  /* Semantic (flip with .dark) */
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-ink: var(--ink);
+  --color-stone: var(--stone);
+  --color-line: var(--line);
+  --shadow-card: var(--shadow-card);
+
+  /* Typography roles */
+  --text-display-lg: 48px;
+  --text-display-sm: 32px;
+  --text-headline-md: 24px;
+  --text-headline-sm: 18px;
+  --text-stat-lg: 24px;
+  --text-label-mono: 14px;
+  --text-body-md: 16px;
+  --text-body-lg: 18px;
+}
+
+html[data-nav="collapsed"] {
+  --nav-w: 4.5rem;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+@layer components {
+  .field {
+    @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition focus:border-transparent focus:ring-2 focus:ring-trailblaze;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-1 rounded-lg bg-trailblaze px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-1 rounded-lg border border-stone/40 px-3 py-2 text-sm font-medium text-ink transition hover:bg-stone/10 disabled:opacity-40;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-stone transition hover:bg-stone/10;
+  }
+  .card {
+    @apply rounded-xl border border-line bg-surface p-4 shadow-card;
+  }
+}
+
+@theme {
+  --text-display-lg--line-height: 1.1;
+  --text-display-lg--font-weight: 700;
+  --text-display-sm--line-height: 1.2;
+  --text-display-sm--font-weight: 700;
+  --text-headline-md--line-height: 1.3;
+  --text-headline-md--font-weight: 600;
+  --text-headline-sm--line-height: 1.4;
+  --text-headline-sm--font-weight: 600;
+  --text-stat-lg--line-height: 1;
+  --text-stat-lg--font-weight: 600;
+  --text-label-mono--line-height: 1;
+  --text-label-mono--letter-spacing: 0.02em;
+  --text-label-mono--font-weight: 500;
+  --text-body-md--line-height: 1.5;
+  --text-body-lg--line-height: 1.6;
 }

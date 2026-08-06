@@ -1,16 +1,9 @@
-import { Charts } from '@/components/charts'
-import { getDashboardStats } from '@/lib/stats'
+import { getStats } from '@/lib/stats'
+import { StatistikClient } from './statistik-client'
 
 export default async function StatistikPage() {
-  const stats = await getDashboardStats()
-
-  return (
-    <main className="p-4">
-      <header className="mb-6">
-        <h1 className="font-display text-2xl font-bold">Statistik</h1>
-        <p className="text-sm text-stone">Tren dan pergerakan lamaranmu.</p>
-      </header>
-      <Charts growth={stats.growth} successRate={stats.successRate} distribution={stats.distribution} />
-    </main>
-  )
+  const stats = await getStats('30d')
+  return <StatistikClient initial={stats} />
 }
+
+export const dynamic = 'force-dynamic'

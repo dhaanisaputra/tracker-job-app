@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle } from 'lucide-react'
 import { insforge } from '@/lib/browser-client'
 import { STATUSES, EMPLOYMENT_TYPES, WORK_ARRANGEMENTS } from '@/lib/types'
 import type { JobApplication, Source } from '@/lib/types'
+import { Modal } from '@/components/modal'
+import { toast } from '@/components/toast'
 
 type Props = {
   sources: Source[]
@@ -20,9 +22,25 @@ type Duplicate = {
   current_status: string
 }
 
-const inputCls =
-  'w-full rounded-lg border border-stone/40 bg-white px-3 py-2 text-sm text-ink outline-none focus:border-trailblaze'
+const inputCls = 'field'
 const labelCls = 'mb-1 block text-sm font-medium text-ink'
+
+function AutosizeTextarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  const ref = useRef<HTMLTextAreaElement>(null)
+
+  function resize() {
+    const el = ref.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, 480)}px`
+  }
+
+  useEffect(() => {
+    resize()
+  }, [])
+
+  return <textarea {...props} ref={ref} onInput={resize} className={inputCls} />
+}
 
 export function ApplicationForm({ sources, initial }: Props) {
   const router = useRouter()
@@ -92,6 +110,7 @@ export function ApplicationForm({ sources, initial }: Props) {
       setError(result.message)
       return
     }
+    toast(isEdit ? 'Perubahan tersimpan' : 'Lamaran tersimpan')
     router.push('/dashboard')
     router.refresh()
   }
@@ -110,7 +129,7 @@ export function ApplicationForm({ sources, initial }: Props) {
           <ul className="mt-2 space-y-1 text-sm text-ink">
             {duplicates.map((d) => (
               <li key={d.id}>
-                <span className="font-medium">{d.company_name}</span> — {d.role_title} (
+                <span className="font-medium">{d.company_name}</span> - {d.role_title} (
                 {new Date(d.applied_date).toLocaleDateString('id-ID', {
                   day: 'numeric',
                   month: 'short',
@@ -123,8 +142,6 @@ export function ApplicationForm({ sources, initial }: Props) {
           <p className="mt-1 text-xs text-stone">Tetap lanjut tambah lamaran baru?</p>
         </div>
       )}
-
-      {error && <p className="rounded-lg bg-ember/10 px-3 py-2 text-sm text-ember">{error}</p>}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block sm:col-span-2">
@@ -151,7 +168,7 @@ export function ApplicationForm({ sources, initial }: Props) {
         </label>
         <label className="block sm:col-span-2">
           <span className={labelCls}>Deskripsi pekerjaan</span>
-          <textarea name="job_description" rows={4} defaultValue={initial?.job_description ?? ''} className={inputCls} />
+          <AutosizeTextarea name="job_description" defaultValue={initial?.job_description ?? ''} placeholder="Tempel deskripsi pekerjaan di sini..." />
         </label>
         <label className="block">
           <span className={labelCls}>Lokasi</span>
@@ -160,7 +177,7 @@ export function ApplicationForm({ sources, initial }: Props) {
         <label className="block">
           <span className={labelCls}>Tipe pekerjaan</span>
           <select name="employment_type" defaultValue={initial?.employment_type ?? ''} className={inputCls}>
-            <option value="">—</option>
+            <option value="">Pilih</option>
             {EMPLOYMENT_TYPES.map((t) => (
               <option key={t}>{t}</option>
             ))}
@@ -169,7 +186,7 @@ export function ApplicationForm({ sources, initial }: Props) {
         <label className="block">
           <span className={labelCls}>Arrangement</span>
           <select name="work_arrangement" defaultValue={initial?.work_arrangement ?? ''} className={inputCls}>
-            <option value="">—</option>
+            <option value="">Pilih</option>
             {WORK_ARRANGEMENTS.map((t) => (
               <option key={t}>{t}</option>
             ))}
@@ -209,7 +226,7 @@ export function ApplicationForm({ sources, initial }: Props) {
         </label>
         <label className="block sm:col-span-2">
           <span className={labelCls}>Catatan</span>
-          <textarea name="notes" rows={3} defaultValue={initial?.notes ?? ''} className={inputCls} />
+          <AutosizeTextarea name="notes" defaultValue={initial?.notes ?? ''} />
         </label>
         <label className="block">
           <span className={labelCls}>Follow-up berikutnya</span>
@@ -243,10 +260,23 @@ export function ApplicationForm({ sources, initial }: Props) {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-lg bg-trailblaze px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+        className="btn-primary w-full"
       >
         {submitting ? 'Menyimpan...' : isEdit ? 'Simpan perubahan' : 'Tambah lamaran'}
       </button>
+
+      <Modal open={!!error} onClose={() => setError('')} title="Gagal menyimpan">
+        <p className="text-sm text-ember">{error}</p>
+        <div className="mt-5 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setError('')}
+            className="btn-primary"
+          >
+            Tutup
+          </button>
+        </div>
+      </Modal>
     </form>
   )
 }

@@ -16,7 +16,7 @@ function StatusBadge({ status }: { status: string }) {
 function Row({ label, value }: { label: string; value?: React.ReactNode }) {
   if (value === null || value === undefined || value === '') return null
   return (
-    <div className="flex justify-between gap-4 border-b border-stone/10 py-2 text-sm">
+    <div className="flex justify-between gap-4 border-b border-line py-2 text-sm">
       <span className="text-stone">{label}</span>
       <span className="text-right font-medium text-ink">{value}</span>
     </div>
@@ -47,13 +47,13 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
   return (
     <main className="p-4">
       <div className="mb-4 flex items-center justify-between">
-        <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm text-stone hover:text-ink">
+        <Link href="/lamaran" className="inline-flex items-center gap-1 text-sm text-stone hover:text-ink">
           <ArrowLeft size={16} /> Kembali
         </Link>
         <div className="flex items-center gap-2">
           <Link
             href={`/lamaran/${id}/edit`}
-            className="flex items-center gap-1 rounded-lg border border-stone/40 px-3 py-1.5 text-sm font-medium hover:bg-stone/10"
+            className="btn-secondary"
           >
             <Pencil size={14} /> Edit
           </Link>
@@ -62,7 +62,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
       </div>
 
       <header className="mb-6">
-        <h1 className="font-display text-2xl font-bold leading-tight">{app.company_name}</h1>
+        <h1 className="font-display text-display-lg leading-tight text-ink">{app.company_name}</h1>
         <p className="mt-1 text-base text-stone">{app.role_title}</p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <StatusBadge status={app.current_status} />
@@ -83,8 +83,8 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
       </header>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <section className="rounded-xl border border-stone/30 bg-white p-4">
-          <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-stone">Detail</h2>
+        <section className="rounded-xl border border-line bg-surface p-4 shadow-card">
+          <h2 className="mb-3 font-display text-headline-sm text-ink">Detail</h2>
           <Row label="Lokasi" value={app.location && <span className="flex items-center justify-end gap-1"><MapPin size={14} /> {app.location}</span>} />
           <Row label="Tipe" value={app.employment_type} />
           <Row label="Arrangement" value={app.work_arrangement} />
@@ -105,24 +105,24 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
 
         <section className="space-y-6">
           {app.job_description && (
-            <div className="rounded-xl border border-stone/30 bg-white p-4">
-              <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-stone">Deskripsi Pekerjaan</h2>
+            <div className="rounded-xl border border-line bg-surface p-4 shadow-card">
+              <h2 className="mb-2 font-display text-headline-sm text-ink">Deskripsi Pekerjaan</h2>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink">{app.job_description}</p>
             </div>
           )}
           {app.notes && (
-            <div className="rounded-xl border border-stone/30 bg-white p-4">
-              <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-stone">Catatan</h2>
+            <div className="rounded-xl border border-line bg-surface p-4 shadow-card">
+              <h2 className="mb-2 font-display text-headline-sm text-ink">Catatan</h2>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink">{app.notes}</p>
             </div>
           )}
         </section>
       </div>
 
-      <section className="mt-6 rounded-xl border border-stone/30 bg-white p-4">
-        <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide text-stone">Riwayat Status</h2>
+      <section className="mt-6 rounded-xl border border-line bg-surface p-4 shadow-card">
+        <h2 className="mb-4 font-display text-headline-sm text-ink">Riwayat Status</h2>
         {history && history.length > 0 ? (
-          <ol className="relative border-l border-stone/30 pl-4">
+          <ol className="relative border-l border-line pl-4">
             {history.map((h) => (
               <li key={`${h.status}-${h.changed_at}`} className="mb-4 last:mb-0">
                 <span className="absolute -left-1.5 mt-1.5 h-2 w-2 rounded-full bg-trailblaze" />
