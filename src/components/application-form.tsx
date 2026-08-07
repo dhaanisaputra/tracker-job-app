@@ -52,7 +52,11 @@ export function ApplicationForm({ sources, initial }: Props) {
   const [sourceId, setSourceId] = useState(initial?.source_id ?? sources[0]?.id ?? '')
   const [employmentType, setEmploymentType] = useState(initial?.employment_type ?? '')
   const [workArrangement, setWorkArrangement] = useState(initial?.work_arrangement ?? '')
+  const [jobUrl, setJobUrl] = useState(initial?.job_url ?? '')
   const [error, setError] = useState('')
+
+  const jobUrlError = jobUrl !== '' && !/^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/.*)?$/.test(jobUrl)
+  const mandatoryMissing = employmentType === '' || workArrangement === ''
 
   // ponytail: plain debounce, no hook dep
   useEffect(() => {
@@ -76,11 +80,22 @@ export function ApplicationForm({ sources, initial }: Props) {
     setError('')
     const form = new FormData(e.currentTarget)
 
+    if (jobUrlError) {
+      setSubmitting(false)
+      setError('Link lowongan tidak sesuai format URL')
+      return
+    }
+    if (mandatoryMissing) {
+      setSubmitting(false)
+      setError('Tipe pekerjaan dan Posisi Kerja wajib diisi')
+      return
+    }
+
     const payload: Record<string, unknown> = {
       company_name: form.get('company_name'),
       role_title: form.get('role_title'),
       source_id: sourceId,
-      job_url: form.get('job_url') || null,
+      job_url: jobUrl || null,
       job_description: form.get('job_description') || null,
       location: form.get('location') || null,
       employment_type: employmentType || null,
@@ -151,15 +166,15 @@ export function ApplicationForm({ sources, initial }: Props) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block sm:col-span-2">
-          <span className={labelCls}>Perusahaan *</span>
+          <span className={labelCls}>Perusahaan <span className="text-ember">*</span></span>
           <input id="company_name" name="company_name" required defaultValue={initial?.company_name} className={inputCls} />
         </label>
         <label className="block sm:col-span-2">
-          <span className={labelCls}>Role / Posisi *</span>
+          <span className={labelCls}>Role / Posisi <span className="text-ember">*</span></span>
           <input name="role_title" required defaultValue={initial?.role_title} className={inputCls} />
         </label>
         <label className="block sm:col-span-2">
-          <span className={labelCls}>Sumber lamaran *</span>
+          <span className={labelCls}>Sumber lamaran <span className="text-ember">*</span></span>
           <Dropdown
             value={sourceId}
             options={sources.map((s) => ({ value: s.id, label: s.name }))}
@@ -168,7 +183,17 @@ export function ApplicationForm({ sources, initial }: Props) {
         </label>
         <label className="block sm:col-span-2">
           <span className={labelCls}>Link lowongan</span>
-          <input type="url" name="job_url" defaultValue={initial?.job_url ?? ''} className={inputCls} placeholder="https://..." />
+          <input
+            type="text"
+            name="job_url"
+            value={jobUrl}
+            onChange={(e) => setJobUrl(e.target.value)}
+            className={`${inputCls} ${jobUrlError ? 'border-ember' : ''}`}
+            placeholder="https://..."
+          />
+          {jobUrlError && (
+            <span className="mt-1 block text-xs text-ember">Teks tidak sesuai format link.</span>
+          )}
         </label>
         <label className="block sm:col-span-2">
           <span className={labelCls}>Deskripsi pekerjaan</span>
@@ -179,35 +204,41 @@ export function ApplicationForm({ sources, initial }: Props) {
           <input name="location" defaultValue={initial?.location ?? ''} className={inputCls} />
         </label>
         <label className="block">
-          <span className={labelCls}>Tipe pekerjaan</span>
+          <span className={labelCls}>Tipe pekerjaan <span className="text-ember">*</span></span>
           <Dropdown
             value={employmentType}
             options={EMPLOYMENT_TYPES.map((t) => ({ value: t, label: t }))}
             onChange={setEmploymentType}
             placeholder="Pilih"
           />
+          {employmentType === '' && (
+            <span className="mt-1 block text-xs text-ember">Tipe pekerjaan wajib diisi.</span>
+          )}
         </label>
         <label className="block">
-          <span className={labelCls}>Cara Kerja</span>
+          <span className={labelCls}>Posisi Kerja <span className="text-ember">*</span></span>
           <Dropdown
             value={workArrangement}
             options={WORK_ARRANGEMENTS.map((t) => ({ value: t, label: t }))}
             onChange={setWorkArrangement}
             placeholder="Pilih"
           />
+          {workArrangement === '' && (
+            <span className="mt-1 block text-xs text-ember">Posisi Kerja wajib diisi.</span>
+          )}
         </label>
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
-            <span className={labelCls}>Gaji min</span>
-            <input type="number" name="salary_min" defaultValue={initial?.salary_min ?? ''} className={inputCls} />
+            <span className={labelCls}>Gaji min (Rp)</span>
+            <input type="number" min="0" name="salary_min" defaultValue={initial?.salary_min ?? ''} className={inputCls} />
           </label>
           <label className="block">
-            <span className={labelCls}>Gaji max</span>
-            <input type="number" name="salary_max" defaultValue={initial?.salary_max ?? ''} className={inputCls} />
+            <span className={labelCls}>Gaji max (Rp)</span>
+            <input type="number" min="0" name="salary_max" defaultValue={initial?.salary_max ?? ''} className={inputCls} />
           </label>
         </div>
         <label className="block">
-          <span className={labelCls}>Tanggal apply *</span>
+          <span className={labelCls}>Tanggal apply <span className="text-ember">*</span></span>
           <input
             type="date"
             name="applied_date"
@@ -217,7 +248,7 @@ export function ApplicationForm({ sources, initial }: Props) {
           />
         </label>
         <label className="block">
-          <span className={labelCls}>Status saat ini *</span>
+          <span className={labelCls}>Status saat ini <span className="text-ember">*</span></span>
           <Dropdown
             value={status}
             options={STATUSES.map((s) => ({ value: s, label: s }))}
@@ -226,7 +257,7 @@ export function ApplicationForm({ sources, initial }: Props) {
           />
         </label>
         <label className="block sm:col-span-2">
-          <span className={labelCls}>Contact person</span>
+          <span className={labelCls}>Nama rekruter</span>
           <input name="contact_person" defaultValue={initial?.contact_person ?? ''} className={inputCls} placeholder="Nama recruiter/HR" />
         </label>
         <label className="block sm:col-span-2">

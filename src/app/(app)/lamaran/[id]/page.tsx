@@ -90,7 +90,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                 : undefined
             }
           />
-          <Row label="Kontak" value={app.contact_person && <span className="flex items-center justify-end gap-1"><User size={14} /> {app.contact_person}</span>} />
+          <Row label="Nama rekruter" value={app.contact_person && <span className="flex items-center justify-end gap-1"><User size={14} /> {app.contact_person}</span>} />
           <Row label="Interview dijadwalkan" value={app.interview_scheduled_at && new Date(app.interview_scheduled_at).toLocaleString('id-ID')} />
           <Row label="Follow-up berikutnya" value={fmt(app.next_follow_up_date)} />
           {app.offer_salary != null && <Row label="Nominal offer" value={app.offer_salary} />}

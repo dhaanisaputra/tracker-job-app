@@ -72,7 +72,7 @@ export function ProfileForm({ user, profile }: { user: UserSchema | null; profil
             <input type="url" name="portfolio_url" defaultValue={profile?.portfolio_url ?? ''} className={inputCls} placeholder="https://..." />
           </label>
           <label className="block sm:col-span-2">
-            <span className={labelCls}>Target gaji</span>
+            <span className={labelCls}>Target gaji (Rp)</span>
             <input type="number" name="salary_expectation" defaultValue={profile?.salary_expectation ?? ''} className={inputCls} placeholder="cth. 12000000" />
           </label>
         </div>
