@@ -22,7 +22,7 @@ export function StreakTrail({ streak, dates, todayCount }: { streak: number; dat
         })}
       </div>
       <p className="mt-2 text-center text-label-xs text-stone">
-        Titik oren = ada lamaran; titik kosong = tidak ada, dalam 7 hari terakhir.
+        7 hari terakhir — berisi berarti ada lamaran.
       </p>
     </div>
   )
