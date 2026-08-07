@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/page-header'
 import { StatCard } from '@/components/stat-card'
 import { StreakTrail } from '@/components/streak-trail'
 import { LamaranList } from '@/components/lamaran-list'
+import { ThemeToggle } from '@/components/theme-toggle'
 import type { ApplicationWithSource } from '@/lib/types'
 
 export default async function DashboardPage() {
@@ -42,6 +43,7 @@ export default async function DashboardPage() {
         <Link href="/lamaran/import" className="btn-secondary">
           <FileUp size={16} /> Impor
         </Link>
+        <ThemeToggle />
         <Link href="/lamaran/baru" className="btn-primary">
           <Plus size={16} /> Tambah
         </Link>

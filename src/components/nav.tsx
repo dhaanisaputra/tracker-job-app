@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react'
 import { startTransition } from 'react'
 import { LayoutDashboard, Briefcase, BarChart3, Tags, User, ChevronsLeft, ChevronsRight, LogOut } from 'lucide-react'
 import { signOut } from '@/app/auth-actions'
-import { ThemeToggle } from '@/components/theme-toggle'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 
 const items = [
@@ -124,9 +123,6 @@ export function Nav({ user, streak }: { user: { email?: string | null; profile?:
               </div>
             </div>
           )}
-          <div className={`flex items-center gap-1 ${collapsed ? 'flex-col' : ''}`}>
-            <ThemeToggle dark />
-          </div>
           <button
             type="button"
             onClick={() => setConfirmLogout(true)}
