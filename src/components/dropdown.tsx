@@ -16,33 +16,32 @@ export function Dropdown({ value, options, onChange, placeholder = 'Pilih', pane
   const [pos, setPos] = useState<{ top: number; left: number; width: number } | null>(null)
 
   useEffect(() => {
-    if (open && btnRef.current) {
-      const r = btnRef.current.getBoundingClientRect()
-      // panel width matches the trigger; keep on-screen horizontally
-      const width = Math.min(panelWidth ?? r.width, window.innerWidth - 16)
-      const left = Math.max(8, Math.min(r.right - width, window.innerWidth - width - 8))
-      setPos({ top: r.bottom + 4, left, width })
+    const place = () => {
+      if (open && btnRef.current) {
+        const r = btnRef.current.getBoundingClientRect()
+        // panel width (optionally wider than the trigger); keep on-screen
+        const width = Math.min(panelWidth ?? r.width, window.innerWidth - 16)
+        const left = Math.max(8, Math.min(r.right - width, window.innerWidth - width - 8))
+        setPos({ top: r.bottom + 4, left, width })
+      }
+      if (!open) setPos(null)
     }
-    if (!open) setPos(null)
-  }, [open])
-
-  useEffect(() => {
-    if (!open) return
+    place()
     // close when tapping outside the dropdown (button or panel)
     const onDocClick = (e: MouseEvent | TouchEvent) => {
       if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false)
     }
-    // close on scroll/resize so the fixed-positioned panel doesn't stay locked
-    const close = () => setOpen(false)
+    // keep the fixed-positioned panel anchored to the trigger while scrolling
+    // (re-position instead of closing, so the list doesn't vanish on scroll)
+    window.addEventListener('scroll', place, true)
+    window.addEventListener('resize', place)
     document.addEventListener('click', onDocClick)
-    window.addEventListener('scroll', close, true)
-    window.addEventListener('resize', close)
     return () => {
+      window.removeEventListener('scroll', place, true)
+      window.removeEventListener('resize', place)
       document.removeEventListener('click', onDocClick)
-      window.removeEventListener('scroll', close, true)
-      window.removeEventListener('resize', close)
     }
-  }, [open])
+  }, [open, panelWidth])
 
   const current = options.find((o) => o.value === value)?.label
 
