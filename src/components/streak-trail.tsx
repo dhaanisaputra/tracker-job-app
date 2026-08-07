@@ -28,6 +28,9 @@ export function StreakTrail({ streak, dates, todayCount }: { streak: number; dat
           )
         })}
       </div>
+      <p className="mt-3 text-label-xs text-stone">
+        (7 hari terakhir) <span className="font-medium text-amber">Orange</span> menandakan kamu aktif melamar di hari itu.
+      </p>
     </div>
   )
 }
