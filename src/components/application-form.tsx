@@ -89,6 +89,7 @@ export function ApplicationForm({ sources, initial }: Props) {
       notes: form.get('notes') || null,
       next_follow_up_date: form.get('next_follow_up_date') || null,
       interview_scheduled_at: form.get('interview_scheduled_at') || null,
+      task_deadline: showTaskDeadline ? (form.get('task_deadline') || null) : null,
       offer_salary: form.get('offer_salary') ? Number(form.get('offer_salary')) : null,
       offer_deadline: form.get('offer_deadline') || null,
     }
@@ -117,6 +118,7 @@ export function ApplicationForm({ sources, initial }: Props) {
 
   const showInterview = status === 'HR Interview' || status === 'Technical Interview'
   const showOffer = status === 'Offer'
+  const showTaskDeadline = status === 'Technical Interview'
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -184,7 +186,7 @@ export function ApplicationForm({ sources, initial }: Props) {
           </select>
         </label>
         <label className="block">
-          <span className={labelCls}>Arrangement</span>
+          <span className={labelCls}>Cara Kerja</span>
           <select name="work_arrangement" defaultValue={initial?.work_arrangement ?? ''} className={inputCls}>
             <option value="">Pilih</option>
             {WORK_ARRANGEMENTS.map((t) => (
@@ -241,6 +243,20 @@ export function ApplicationForm({ sources, initial }: Props) {
               defaultValue={initial?.interview_scheduled_at ? initial.interview_scheduled_at.slice(0, 16) : ''}
               className={inputCls}
             />
+          </label>
+        )}
+        {showTaskDeadline && (
+          <label className="block">
+            <span className={labelCls}>Deadline task</span>
+            <input
+              type="datetime-local"
+              name="task_deadline"
+              defaultValue={initial?.task_deadline ? initial.task_deadline.slice(0, 16) : ''}
+              className={inputCls}
+            />
+            <span className="mt-1 block text-xs text-stone">
+              Misal deadline assignment/coding test.
+            </span>
           </label>
         )}
         {showOffer && (
