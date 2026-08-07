@@ -182,7 +182,7 @@ export function ApplicationForm({ sources, initial }: Props) {
           <span className={labelCls}>Tipe pekerjaan</span>
           <Dropdown
             value={employmentType}
-            options={[{ value: '', label: 'Pilih' }, ...EMPLOYMENT_TYPES.map((t) => ({ value: t, label: t }))]}
+            options={EMPLOYMENT_TYPES.map((t) => ({ value: t, label: t }))}
             onChange={setEmploymentType}
             placeholder="Pilih"
           />
@@ -191,7 +191,7 @@ export function ApplicationForm({ sources, initial }: Props) {
           <span className={labelCls}>Cara Kerja</span>
           <Dropdown
             value={workArrangement}
-            options={[{ value: '', label: 'Pilih' }, ...WORK_ARRANGEMENTS.map((t) => ({ value: t, label: t }))]}
+            options={WORK_ARRANGEMENTS.map((t) => ({ value: t, label: t }))}
             onChange={setWorkArrangement}
             placeholder="Pilih"
           />
