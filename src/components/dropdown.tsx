@@ -24,6 +24,19 @@ export function Dropdown({ value, options, onChange, placeholder = 'Pilih' }: {
     if (!open) setPos(null)
   }, [open])
 
+  useEffect(() => {
+    if (!open) return
+    // panel is fixed-positioned; close it on any scroll/resize so it doesn't
+    // stay locked in place while the page moves underneath
+    const close = () => setOpen(false)
+    window.addEventListener('scroll', close, true)
+    window.addEventListener('resize', close)
+    return () => {
+      window.removeEventListener('scroll', close, true)
+      window.removeEventListener('resize', close)
+    }
+  }, [open])
+
   const current = options.find((o) => o.value === value)?.label
 
   return (
