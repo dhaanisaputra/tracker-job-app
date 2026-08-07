@@ -3,6 +3,7 @@ import { Plus, FileUp, Send, Bell } from 'lucide-react'
 import { serverDb } from '@/lib/server-db'
 import { calcStreak } from '@/lib/streak'
 import { getSources } from '@/lib/queries'
+import { taskState } from '@/lib/task-state'
 import { PageHeader } from '@/components/page-header'
 import { StatCard } from '@/components/stat-card'
 import { StreakTrail } from '@/components/streak-trail'
@@ -13,13 +14,14 @@ export default async function DashboardPage() {
   const insforge = await serverDb()
   const sources = await getSources()
 
-  const [datesRes, totalRes, todayRes, followRes, interviewRes, recentRes] = await Promise.all([
+  const [datesRes, totalRes, todayRes, followRes, interviewRes, recentRes, taskRes] = await Promise.all([
     insforge.from('job_applications').select('applied_date').order('applied_date', { ascending: false }).limit(90),
     insforge.from('job_applications').select('*', { count: 'exact', head: true }),
     insforge.from('job_applications').select('*', { count: 'exact', head: true }).eq('applied_date', new Date().toISOString().slice(0, 10)),
     insforge.from('job_applications').select('*', { count: 'exact', head: true }).not('next_follow_up_date', 'is', null).lte('next_follow_up_date', cutoff()),
     insforge.from('job_applications').select('*', { count: 'exact', head: true }).not('interview_scheduled_at', 'is', null).lte('interview_scheduled_at', interviewCutoff()),
     insforge.from('job_applications').select('*, sources(name)').order('applied_date', { ascending: false }).limit(5),
+    insforge.from('job_applications').select('current_status, task_deadline').eq('current_status', 'Technical Interview').not('task_deadline', 'is', null),
   ])
 
   const dates = datesRes.data?.map((d: { applied_date: string }) => d.applied_date) ?? []
@@ -27,7 +29,11 @@ export default async function DashboardPage() {
   const todayCount = todayRes.count ?? dates.filter((d) => d.slice(0, 10) === today).length
   const streak = calcStreak(dates)
   const total = totalRes.count ?? dates.length
-  const followup = (followRes.count ?? 0) + (interviewRes.count ?? 0)
+  const pendingTasks = (taskRes.data ?? []).filter(
+    (t: { current_status: string; task_deadline: string | null }) =>
+      taskState(t.current_status, t.task_deadline).kind !== 'none',
+  ).length
+  const followup = (followRes.count ?? 0) + (interviewRes.count ?? 0) + pendingTasks
   const recent = (recentRes.data ?? []) as ApplicationWithSource[]
 
   return (
