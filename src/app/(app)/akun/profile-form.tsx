@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { updateProfile } from './actions'
 import { signOut } from '@/app/auth-actions'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { toast } from '@/components/toast'
 import type { UserSchema } from '@insforge/sdk'
 import type { Profile } from '@/lib/types'
 
@@ -28,6 +30,13 @@ export function ProfileForm({ user, profile }: { user: UserSchema | null; profil
   const initial = user?.profile?.name ?? profile?.full_name ?? ''
   const initialChar = (initial || user?.email || '?').charAt(0).toUpperCase()
   const [confirmLogout, setConfirmLogout] = useState(false)
+  const [state, action, pending] = useActionState(updateProfile, undefined)
+
+  useEffect(() => {
+    if (state === undefined) return
+    if (state.error) return
+    toast('Profil disimpan')
+  }, [state])
 
   return (
     <div className="space-y-6">
@@ -43,7 +52,7 @@ export function ProfileForm({ user, profile }: { user: UserSchema | null; profil
         </div>
       </section>
 
-      <form action={updateProfile} className="card p-4">
+      <form action={action} className="card p-4">
         <h2 className="mb-4 font-display text-headline-sm text-ink">Profil</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block sm:col-span-2">
@@ -67,6 +76,7 @@ export function ProfileForm({ user, profile }: { user: UserSchema | null; profil
             <input type="number" name="salary_expectation" defaultValue={profile?.salary_expectation ?? ''} className={inputCls} placeholder="cth. 12000000" />
           </label>
         </div>
+        {state?.error && <p className="mt-3 text-sm text-ember">{state.error}</p>}
         <div className="mt-4">
           <SubmitButton />
         </div>
