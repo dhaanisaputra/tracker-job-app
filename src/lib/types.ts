@@ -37,6 +37,7 @@ export type JobApplication = {
   notes?: string | null
   next_follow_up_date?: string | null
   interview_scheduled_at?: string | null
+  task_deadline?: string | null
   offer_salary?: number | null
   offer_deadline?: string | null
   created_at: string
