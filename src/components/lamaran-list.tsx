@@ -11,12 +11,13 @@ import type { ApplicationWithSource, Source } from '@/lib/types'
 import { deleteApplication } from '@/app/(app)/lamaran/[id]/actions'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { toast } from '@/components/toast'
+import { TaskBadge } from '@/components/task-badge'
 
 const PAGE_SIZE = 15
 
-export function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({ status, className }: { status: string; className?: string }) {
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_COLORS[status] ?? 'bg-stone/20 text-stone'}`}>
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-label-xs font-semibold ${STATUS_COLORS[status] ?? 'bg-stone/15 text-stone'} ${className ?? ''}`}>
       {status}
     </span>
   )
@@ -30,10 +31,10 @@ export function LamaranList(props: Props) {
   if (props.variant === 'compact') {
     const { initialItems } = props
     return (
-      <div className="rounded-xl border border-line bg-surface shadow-card">
+      <div className="card">
         <div className="flex items-center justify-between border-b border-line px-4 py-3">
-          <h2 className="font-display text-sm font-bold uppercase tracking-wide text-stone">Aktivitas Terbaru</h2>
-          <Link href="/lamaran" className="text-sm font-medium text-denim hover:underline">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-stone">Aktivitas Terbaru</h2>
+          <Link href="/lamaran" className="text-sm font-medium text-trailblaze hover:underline">
             Lihat semua
           </Link>
         </div>
@@ -43,14 +44,15 @@ export function LamaranList(props: Props) {
           <ul className="divide-y divide-line">
             {initialItems.map((app) => (
               <li key={app.id}>
-                <Link href={`/lamaran/${app.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-stone/5">
+                <Link href={`/lamaran/${app.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-surface-muted">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold text-ink">{app.company_name}</p>
-                    <p className="truncate text-sm text-stone">{app.role_title}</p>
+                    <p className="truncate text-sm font-semibold text-ink">{app.company_name}</p>
+                    <p className="truncate text-xs text-stone">{app.role_title}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <StatusBadge status={app.current_status} />
-                    <span className="text-xs text-stone">
+                    <TaskBadge currentStatus={app.current_status} deadline={app.task_deadline} />
+                    <span className="text-label-xs text-stone">
                       {new Date(app.applied_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
                     </span>
                   </div>
@@ -159,10 +161,10 @@ function FullList({ sources }: { sources: Source[] }) {
       </div>
 
       {selected.size > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg bg-denim/10 p-2 text-sm">
-          <span className="px-1 font-medium text-denim">{selected.size} dipilih</span>
-          <button onClick={() => setConfirmBulk(true)} className="inline-flex items-center gap-1 rounded-md bg-ember px-2 py-1 text-white"><Trash2 size={14} /> Hapus</button>
-          <select onChange={(e) => e.target.value && bulkStatus(e.target.value)} defaultValue="" className="rounded-md border border-line bg-surface px-2 py-1 text-sm">
+        <div className="flex flex-wrap items-center gap-2 rounded-md bg-denim/10 p-2 text-sm">
+          <span className="px-1 text-sm font-medium text-denim">{selected.size} dipilih</span>
+          <button onClick={() => setConfirmBulk(true)} className="inline-flex items-center gap-1 rounded-md bg-ember px-2.5 py-1.5 text-xs font-semibold text-white hover:opacity-90"><Trash2 size={14} /> Hapus</button>
+          <select onChange={(e) => e.target.value && bulkStatus(e.target.value)} defaultValue="" className="rounded-md border border-line bg-surface px-2 py-1.5 text-sm text-ink">
             <option value="">Ubah status...</option>
             {STATUSES.map((s) => (
               <option key={s}>{s}</option>
@@ -174,27 +176,28 @@ function FullList({ sources }: { sources: Source[] }) {
       {isLoading ? (
         <div className="flex justify-center py-10 text-stone"><Loader2 className="animate-spin" /></div>
       ) : items.length === 0 ? (
-        <div className="rounded-xl border border-line bg-surface p-8 text-center shadow-card">
-          <p className="font-display text-lg font-bold text-ink">Belum ada lamaran</p>
+        <div className="card p-8 text-center">
+          <p className="text-base font-semibold text-ink">Belum ada lamaran</p>
           <p className="mt-1 text-sm text-stone">Mulai catat lamaran pertamamu, atau ubah pencarian.</p>
-          <Link href="/lamaran/baru" className="mt-4 inline-block rounded-lg bg-trailblaze px-4 py-2 text-sm font-semibold text-white">
+          <Link href="/lamaran/baru" className="btn-primary mt-4 inline-flex">
             Tambah lamaran
           </Link>
         </div>
       ) : (
         <>
           {/* Mobile: card list */}
-          <ul className="divide-y divide-line md:hidden">
+          <ul className="space-y-2 md:hidden">
             {items.map((app) => (
-              <li key={app.id} className="flex items-center gap-3 rounded-xl border border-line bg-surface p-3 shadow-card">
+              <li key={app.id} className="card flex items-center gap-3 p-3">
                 <button onClick={() => toggleSelect(app.id)} className="text-stone">
                   {selected.has(app.id) ? <CheckSquare size={18} className="text-trailblaze" /> : <Square size={18} />}
                 </button>
                 <Link href={`/lamaran/${app.id}`} className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-ink">{app.company_name}</p>
-                  <p className="truncate text-sm text-stone">{app.role_title}</p>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-stone">
+                  <p className="truncate text-sm font-semibold text-ink">{app.company_name}</p>
+                  <p className="truncate text-xs text-stone">{app.role_title}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-label-xs text-stone">
                     <StatusBadge status={app.current_status} />
+                    <TaskBadge currentStatus={app.current_status} deadline={app.task_deadline} />
                     <span>{app.sources?.name}</span>
                     <span>{new Date(app.applied_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</span>
                   </div>
@@ -205,34 +208,37 @@ function FullList({ sources }: { sources: Source[] }) {
           </ul>
 
           {/* Desktop: table */}
-          <div className="hidden overflow-hidden rounded-xl border border-line bg-surface shadow-card md:block">
+          <div className="card hidden overflow-hidden md:block">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-line text-left font-mono text-[11px] uppercase tracking-wider text-stone">
-                  <th className="p-3" />
-                  <th className="p-3 font-mono text-[11px] uppercase tracking-wider text-stone">Perusahaan</th>
-                  <th className="p-3 font-mono text-[11px] uppercase tracking-wider text-stone">Role</th>
-                  <th className="p-3 font-mono text-[11px] uppercase tracking-wider text-stone">Sumber</th>
-                  <th className="p-3 font-mono text-[11px] uppercase tracking-wider text-stone">Tanggal</th>
-                  <th className="p-3 font-mono text-[11px] uppercase tracking-wider text-stone">Status</th>
+                <tr className="border-b border-line bg-surface-muted text-left text-label-xs uppercase tracking-wider text-stone">
+                  <th className="p-3 font-semibold" />
+                  <th className="p-3 font-semibold">Perusahaan</th>
+                  <th className="p-3 font-semibold">Role</th>
+                  <th className="p-3 font-semibold">Sumber</th>
+                  <th className="p-3 font-semibold">Tanggal</th>
+                  <th className="p-3 font-semibold">Status</th>
                   <th className="p-3" />
                 </tr>
               </thead>
               <tbody>
                 {items.map((app) => (
-                  <tr key={app.id} className="border-b border-line last:border-0 hover:bg-stone/5">
+                  <tr key={app.id} className="border-b border-line last:border-0 hover:bg-surface-muted">
                     <td className="p-3">
                       <button onClick={() => toggleSelect(app.id)} className="text-stone">
                         {selected.has(app.id) ? <CheckSquare size={16} className="text-trailblaze" /> : <Square size={16} />}
                       </button>
                     </td>
                     <td className="p-3 font-semibold text-ink">
-                      <Link href={`/lamaran/${app.id}`} className="hover:underline">{app.company_name}</Link>
+                      <Link href={`/lamaran/${app.id}`} className="hover:text-trailblaze hover:underline">{app.company_name}</Link>
                     </td>
                     <td className="p-3 text-stone">{app.role_title}</td>
                     <td className="p-3 text-stone">{app.sources?.name}</td>
                     <td className="p-3 font-mono text-stone">{app.applied_date}</td>
-                    <td className="p-3"><StatusBadge status={app.current_status} /></td>
+                    <td className="p-3">
+                      <StatusBadge status={app.current_status} />
+                      <div className="mt-1"><TaskBadge currentStatus={app.current_status} deadline={app.task_deadline} /></div>
+                    </td>
                     <td className="p-3">
                       <RowActions appId={app.id} open={openMenu === app.id} onToggle={() => setOpenMenu(openMenu === app.id ? null : app.id)} />
                     </td>
@@ -306,7 +312,7 @@ function FilterDropdown({ value, options, onChange }: {
         ref={btnRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`w-full truncate rounded-lg border border-line bg-surface px-2 py-1.5 text-left text-sm sm:w-auto ${value ? 'text-ink' : 'text-stone'}`}
+        className={`w-full truncate rounded-md border border-line bg-surface px-2.5 py-2 text-left text-sm sm:w-auto ${value ? 'text-ink' : 'text-stone'}`}
       >
         {current ?? 'Status'}
       </button>
@@ -314,7 +320,7 @@ function FilterDropdown({ value, options, onChange }: {
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div
-            className="fixed z-20 overflow-hidden rounded-xl border border-line bg-surface shadow-lg"
+            className="fixed z-20 overflow-hidden rounded-md border border-line bg-surface shadow-pop"
             style={{ top: pos?.top, left: pos?.left, width: pos?.width, maxHeight: 'min(60dvh, 20rem)' }}
           >
             <ul className="max-h-[min(60dvh,20rem)] overflow-y-auto py-1">
@@ -323,7 +329,7 @@ function FilterDropdown({ value, options, onChange }: {
                   <button
                     type="button"
                     onClick={() => { onChange(o.value); setOpen(false) }}
-                    className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-stone/10 ${o.value === value ? 'font-medium text-denim' : 'text-ink'}`}
+                    className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-surface-muted ${o.value === value ? 'font-medium text-trailblaze' : 'text-ink'}`}
                   >
                     {o.label}
                   </button>
@@ -359,13 +365,13 @@ function RowActions({ appId, open, onToggle }: { appId: string; open: boolean; o
         <>
           <div className="fixed inset-0 z-10" onClick={onToggle} />
           <div
-            className="fixed z-20 w-40 rounded-xl border border-line bg-surface p-1 shadow-lg"
+            className="fixed z-20 w-40 rounded-md border border-line bg-surface p-1 shadow-pop"
             style={{ top: pos.top, left: pos.left }}
           >
-            <Link href={`/lamaran/${appId}`} onClick={onToggle} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink hover:bg-stone/10">
+            <Link href={`/lamaran/${appId}`} onClick={onToggle} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-ink hover:bg-surface-muted">
               <Eye size={14} /> Lihat
             </Link>
-            <Link href={`/lamaran/${appId}/edit`} onClick={onToggle} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink hover:bg-stone/10">
+            <Link href={`/lamaran/${appId}/edit`} onClick={onToggle} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-ink hover:bg-surface-muted">
               <Pencil size={14} /> Edit
             </Link>
             <button
@@ -373,7 +379,7 @@ function RowActions({ appId, open, onToggle }: { appId: string; open: boolean; o
                 onToggle()
                 setConfirmOpen(true)
               }}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-ember hover:bg-ember/10"
+              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-ember hover:bg-ember/10"
             >
               <Trash2 size={14} /> Hapus
             </button>

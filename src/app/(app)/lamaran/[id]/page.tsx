@@ -1,17 +1,10 @@
 import Link from 'next/link'
 import { serverDb } from '@/lib/server-db'
 import { ArrowLeft, ExternalLink, Pencil, MapPin, Calendar, User } from 'lucide-react'
-import { STATUS_COLORS } from '@/lib/types'
 import { deleteApplication } from './actions'
 import { ConfirmDelete } from '@/components/confirm-delete'
-
-function StatusBadge({ status }: { status: string }) {
-  return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_COLORS[status] ?? 'bg-stone/20 text-stone'}`}>
-      {status}
-    </span>
-  )
-}
+import { StatusBadge } from '@/components/lamaran-list'
+import { TaskBadge } from '@/components/task-badge'
 
 function Row({ label, value }: { label: string; value?: React.ReactNode }) {
   if (value === null || value === undefined || value === '') return null
@@ -66,6 +59,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
         <p className="mt-1 text-base text-stone">{app.role_title}</p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <StatusBadge status={app.current_status} />
+          <TaskBadge currentStatus={app.current_status} deadline={app.task_deadline} />
           <span className="text-xs text-stone">
             {app.sources?.name} · <Calendar size={12} className="inline" /> {fmt(app.applied_date)}
           </span>
@@ -83,11 +77,11 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
       </header>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <section className="rounded-xl border border-line bg-surface p-4 shadow-card">
+        <section className="card p-4">
           <h2 className="mb-3 font-display text-headline-sm text-ink">Detail</h2>
           <Row label="Lokasi" value={app.location && <span className="flex items-center justify-end gap-1"><MapPin size={14} /> {app.location}</span>} />
           <Row label="Tipe" value={app.employment_type} />
-          <Row label="Arrangement" value={app.work_arrangement} />
+          <Row label="Cara Kerja" value={app.work_arrangement} />
           <Row
             label="Gaji"
             value={
@@ -96,7 +90,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                 : undefined
             }
           />
-          <Row label="Contact" value={app.contact_person && <span className="flex items-center justify-end gap-1"><User size={14} /> {app.contact_person}</span>} />
+          <Row label="Kontak" value={app.contact_person && <span className="flex items-center justify-end gap-1"><User size={14} /> {app.contact_person}</span>} />
           <Row label="Interview dijadwalkan" value={app.interview_scheduled_at && new Date(app.interview_scheduled_at).toLocaleString('id-ID')} />
           <Row label="Follow-up berikutnya" value={fmt(app.next_follow_up_date)} />
           {app.offer_salary != null && <Row label="Nominal offer" value={app.offer_salary} />}
@@ -105,13 +99,13 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
 
         <section className="space-y-6">
           {app.job_description && (
-            <div className="rounded-xl border border-line bg-surface p-4 shadow-card">
+            <div className="card p-4">
               <h2 className="mb-2 font-display text-headline-sm text-ink">Deskripsi Pekerjaan</h2>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink">{app.job_description}</p>
             </div>
           )}
           {app.notes && (
-            <div className="rounded-xl border border-line bg-surface p-4 shadow-card">
+            <div className="card p-4">
               <h2 className="mb-2 font-display text-headline-sm text-ink">Catatan</h2>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink">{app.notes}</p>
             </div>
@@ -119,7 +113,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
         </section>
       </div>
 
-      <section className="mt-6 rounded-xl border border-line bg-surface p-4 shadow-card">
+      <section className="mt-6 card p-4">
         <h2 className="mb-4 font-display text-headline-sm text-ink">Riwayat Status</h2>
         {history && history.length > 0 ? (
           <ol className="relative border-l border-line pl-4">
