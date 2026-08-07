@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
-import { Unbounded, Plus_Jakarta_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css"
 import { QueryProvider } from '@/providers/query-client-provider'
-
-const unbounded = Unbounded({
-  variable: "--font-display",
-  subsets: ["latin"],
-});
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -33,16 +28,34 @@ export default function RootLayout({
     <html
       lang="id"
       suppressHydrationWarning
-      className={`${unbounded.variable} ${jakarta.variable} ${plexMono.variable} bg-paper text-ink h-full antialiased`}
+      className={`${jakarta.variable} ${plexMono.variable} bg-paper text-ink h-full antialiased`}
     >
       <head>
         <script
+          id="theme-init"
+          type={typeof window === 'undefined' ? 'text/javascript' : 'text/plain'}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})();`,
           }}
         />
       </head>
       <body className="min-h-full flex flex-col">
+        {/* impeccable:direction LAMARANKU-ADMIN
+        THESIS: A single-user job tracker restated as a quiet, professional admin console; refuses the gamified orange/paper "Momentum" world and its display-font heroics.
+        OWN-WORLD: Cool-gray paper canvas; white cards with hairline borders and low offset shadows; indigo `trailblaze` primary for actions/selection only; slate sidebar shell on desktop; Jakarta Sans across the UI with Plex Mono reserved for data.
+        STORY: The visitor opens a calm control center where their pipeline, pipeline health, and next actions are scannable at a glance and every state reads unambiguously.
+        FIRST VIEWPORT: Dark slate sidebar (brand, search, Menu links, user) on desktop; mobile bottom bar; content led by a compact PageHeader with title and primary actions.
+        FORM: CoreUI-style admin console, Restrained palette, Operate mode; seed direction pinned by owner brief.
+        FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md */}
+        <template data-impeccable-direction="LAMARANKU-ADMIN">
+          THESIS: single-user job tracker as a quiet professional admin console; refuses the gamified Momentum world.
+          OWN-WORLD: cool-gray paper; white hairline cards; indigo trailblaze accent for action/selection only; slate sidebar on desktop; Jakarta Sans UI with Plex Mono for data.
+          STORY: a calm control center where pipeline, health, and next actions are scannable and every state reads unambiguously.
+          FIRST VIEWPORT: dark slate sidebar (brand, search, menu, user) on desktop; bottom bar on mobile; compact PageHeader leads content.
+          FORM: CoreUI-style admin console, Restrained palette, Operate mode, seed pinned by owner brief.
+          FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+        </template>
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
