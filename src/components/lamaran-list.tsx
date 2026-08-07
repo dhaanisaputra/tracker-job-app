@@ -148,18 +148,22 @@ function FullList({ sources }: { sources: Source[] }) {
           />
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-2">
-          <Dropdown
-            value={status}
-            options={[{ value: '', label: 'Status' }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
-            onChange={(v) => { setStatus(v); setPage(0) }}
-            placeholder="Status"
-          />
-          <Dropdown
-            value={source}
-            options={[{ value: '', label: 'Sumber' }, ...sources.map((s) => ({ value: s.id, label: s.name }))]}
-            onChange={(v) => { setSource(v); setPage(0) }}
-            placeholder="Sumber"
-          />
+          <div className="sm:w-56">
+            <Dropdown
+              value={status}
+              options={[{ value: '', label: 'Status' }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
+              onChange={(v) => { setStatus(v); setPage(0) }}
+              placeholder="Status"
+            />
+          </div>
+          <div className="sm:w-56">
+            <Dropdown
+              value={source}
+              options={[{ value: '', label: 'Sumber' }, ...sources.map((s) => ({ value: s.id, label: s.name }))]}
+              onChange={(v) => { setSource(v); setPage(0) }}
+              placeholder="Sumber"
+            />
+          </div>
         </div>
       </div>
 
