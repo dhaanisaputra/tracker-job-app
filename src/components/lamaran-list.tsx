@@ -91,7 +91,7 @@ function FullList({ sources }: { sources: Source[] }) {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['applications', debounced, status, source, page],
     queryFn: async () => {
-      let q = insforge.database.from('job_applications').select('*, sources(name)', { count: 'exact' }).order('applied_date', { ascending: false })
+      let q = insforge.database.from('job_applications').select('id, company_name, role_title, current_status, task_deadline, applied_date, source_id, sources(name)', { count: 'exact' }).order('applied_date', { ascending: false })
       if (debounced) {
         q = q.or(`company_name.ilike.%${debounced}%,role_title.ilike.%${debounced}%`)
       }
@@ -99,7 +99,7 @@ function FullList({ sources }: { sources: Source[] }) {
       if (source) q = q.eq('source_id', source)
       q = q.range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
       const res = await q
-      return { items: (res.data ?? []) as ApplicationWithSource[], count: res.count ?? 0 }
+      return { items: (res.data ?? []) as unknown as ApplicationWithSource[], count: res.count ?? 0 }
     },
   })
 
