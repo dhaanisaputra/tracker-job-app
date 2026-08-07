@@ -12,6 +12,7 @@ import { deleteApplication } from '@/app/(app)/lamaran/[id]/actions'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { toast } from '@/components/toast'
 import { TaskBadge } from '@/components/task-badge'
+import { Dropdown } from '@/components/dropdown'
 
 const PAGE_SIZE = 15
 
@@ -147,15 +148,17 @@ function FullList({ sources }: { sources: Source[] }) {
           />
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-2">
-          <FilterDropdown
+          <Dropdown
             value={status}
             options={[{ value: '', label: 'Status' }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
             onChange={(v) => { setStatus(v); setPage(0) }}
+            placeholder="Status"
           />
-          <FilterDropdown
+          <Dropdown
             value={source}
             options={[{ value: '', label: 'Sumber' }, ...sources.map((s) => ({ value: s.id, label: s.name }))]}
             onChange={(v) => { setSource(v); setPage(0) }}
+            placeholder="Sumber"
           />
         </div>
       </div>
@@ -164,12 +167,14 @@ function FullList({ sources }: { sources: Source[] }) {
         <div className="flex flex-wrap items-center gap-2 rounded-md bg-denim/10 p-2 text-sm">
           <span className="px-1 text-sm font-medium text-denim">{selected.size} dipilih</span>
           <button onClick={() => setConfirmBulk(true)} className="inline-flex items-center gap-1 rounded-md bg-ember px-2.5 py-1.5 text-xs font-semibold text-white hover:opacity-90"><Trash2 size={14} /> Hapus</button>
-          <select onChange={(e) => e.target.value && bulkStatus(e.target.value)} defaultValue="" className="rounded-md border border-line bg-surface px-2 py-1.5 text-sm text-ink">
-            <option value="">Ubah status...</option>
-            {STATUSES.map((s) => (
-              <option key={s}>{s}</option>
-            ))}
-          </select>
+          <div className="w-full sm:w-auto">
+            <Dropdown
+              value=""
+              options={[{ value: '', label: 'Ubah status...' }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
+              onChange={(v) => v && bulkStatus(v)}
+              placeholder="Ubah status..."
+            />
+          </div>
         </div>
       )}
 
@@ -281,65 +286,6 @@ function FullList({ sources }: { sources: Source[] }) {
         }}
       />
     </div>
-  )
-}
-
-function FilterDropdown({ value, options, onChange }: {
-  value: string
-  options: { value: string; label: string }[]
-  onChange: (v: string) => void
-}) {
-  const btnRef = useRef<HTMLButtonElement>(null)
-  const [open, setOpen] = useState(false)
-  const [pos, setPos] = useState<{ top: number; left: number; width: number } | null>(null)
-
-  useEffect(() => {
-    if (open && btnRef.current) {
-      const r = btnRef.current.getBoundingClientRect()
-      // keep panel on-screen horizontally
-      const width = Math.min(240, r.width)
-      const left = Math.max(8, Math.min(r.right - width, window.innerWidth - width - 8))
-      setPos({ top: r.bottom + 4, left, width })
-    }
-    if (!open) setPos(null)
-  }, [open])
-
-  const current = options.find((o) => o.value === value)?.label
-
-  return (
-    <>
-      <button
-        ref={btnRef}
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className={`w-full truncate rounded-md border border-line bg-surface px-2.5 py-2 text-left text-sm sm:w-auto ${value ? 'text-ink' : 'text-stone'}`}
-      >
-        {current ?? 'Status'}
-      </button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div
-            className="fixed z-20 overflow-hidden rounded-md border border-line bg-surface shadow-pop"
-            style={{ top: pos?.top, left: pos?.left, width: pos?.width, maxHeight: 'min(60dvh, 20rem)' }}
-          >
-            <ul className="max-h-[min(60dvh,20rem)] overflow-y-auto py-1">
-              {options.map((o) => (
-                <li key={o.value}>
-                  <button
-                    type="button"
-                    onClick={() => { onChange(o.value); setOpen(false) }}
-                    className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-surface-muted ${o.value === value ? 'font-medium text-trailblaze' : 'text-ink'}`}
-                  >
-                    {o.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </>
-      )}
-    </>
   )
 }
 

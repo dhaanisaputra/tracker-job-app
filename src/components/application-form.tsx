@@ -8,6 +8,7 @@ import { STATUSES, EMPLOYMENT_TYPES, WORK_ARRANGEMENTS } from '@/lib/types'
 import type { JobApplication, Source } from '@/lib/types'
 import { Modal } from '@/components/modal'
 import { toast } from '@/components/toast'
+import { Dropdown } from '@/components/dropdown'
 
 type Props = {
   sources: Source[]
@@ -48,6 +49,9 @@ export function ApplicationForm({ sources, initial }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [duplicates, setDuplicates] = useState<Duplicate[]>([])
   const [status, setStatus] = useState(initial?.current_status ?? 'Applied')
+  const [sourceId, setSourceId] = useState(initial?.source_id ?? sources[0]?.id ?? '')
+  const [employmentType, setEmploymentType] = useState(initial?.employment_type ?? '')
+  const [workArrangement, setWorkArrangement] = useState(initial?.work_arrangement ?? '')
   const [error, setError] = useState('')
 
   // ponytail: plain debounce, no hook dep
@@ -75,12 +79,12 @@ export function ApplicationForm({ sources, initial }: Props) {
     const payload: Record<string, unknown> = {
       company_name: form.get('company_name'),
       role_title: form.get('role_title'),
-      source_id: form.get('source_id'),
+      source_id: sourceId,
       job_url: form.get('job_url') || null,
       job_description: form.get('job_description') || null,
       location: form.get('location') || null,
-      employment_type: form.get('employment_type') || null,
-      work_arrangement: form.get('work_arrangement') || null,
+      employment_type: employmentType || null,
+      work_arrangement: workArrangement || null,
       salary_min: form.get('salary_min') ? Number(form.get('salary_min')) : null,
       salary_max: form.get('salary_max') ? Number(form.get('salary_max')) : null,
       applied_date: form.get('applied_date'),
@@ -156,13 +160,11 @@ export function ApplicationForm({ sources, initial }: Props) {
         </label>
         <label className="block sm:col-span-2">
           <span className={labelCls}>Sumber lamaran *</span>
-          <select name="source_id" required defaultValue={initial?.source_id ?? sources[0]?.id} className={inputCls}>
-            {sources.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
+          <Dropdown
+            value={sourceId}
+            options={sources.map((s) => ({ value: s.id, label: s.name }))}
+            onChange={setSourceId}
+          />
         </label>
         <label className="block sm:col-span-2">
           <span className={labelCls}>Link lowongan</span>
@@ -178,21 +180,21 @@ export function ApplicationForm({ sources, initial }: Props) {
         </label>
         <label className="block">
           <span className={labelCls}>Tipe pekerjaan</span>
-          <select name="employment_type" defaultValue={initial?.employment_type ?? ''} className={inputCls}>
-            <option value="">Pilih</option>
-            {EMPLOYMENT_TYPES.map((t) => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
+          <Dropdown
+            value={employmentType}
+            options={[{ value: '', label: 'Pilih' }, ...EMPLOYMENT_TYPES.map((t) => ({ value: t, label: t }))]}
+            onChange={setEmploymentType}
+            placeholder="Pilih"
+          />
         </label>
         <label className="block">
           <span className={labelCls}>Cara Kerja</span>
-          <select name="work_arrangement" defaultValue={initial?.work_arrangement ?? ''} className={inputCls}>
-            <option value="">Pilih</option>
-            {WORK_ARRANGEMENTS.map((t) => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
+          <Dropdown
+            value={workArrangement}
+            options={[{ value: '', label: 'Pilih' }, ...WORK_ARRANGEMENTS.map((t) => ({ value: t, label: t }))]}
+            onChange={setWorkArrangement}
+            placeholder="Pilih"
+          />
         </label>
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
@@ -216,11 +218,12 @@ export function ApplicationForm({ sources, initial }: Props) {
         </label>
         <label className="block">
           <span className={labelCls}>Status saat ini *</span>
-          <select name="current_status" value={status} onChange={(e) => setStatus(e.target.value)} className={inputCls}>
-            {STATUSES.map((s) => (
-              <option key={s}>{s}</option>
-            ))}
-          </select>
+          <Dropdown
+            value={status}
+            options={STATUSES.map((s) => ({ value: s, label: s }))}
+            onChange={setStatus}
+            placeholder="Pilih status"
+          />
         </label>
         <label className="block sm:col-span-2">
           <span className={labelCls}>Contact person</span>

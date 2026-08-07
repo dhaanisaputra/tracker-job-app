@@ -4,7 +4,7 @@ export function Funnel({ labels, values }: { labels: string[]; values: number[] 
   const max = Math.max(...values, 1)
   return (
     <section className="card p-4">
-      <h2 className="text-sm font-semibold text-ink">Kecepatan Funnel</h2>
+      <h2 className="text-sm font-semibold text-ink">Persentase Proses</h2>
       <div className="mt-4 flex flex-col justify-center gap-3">
         {labels.map((label, i) => (
           <div key={label}>
