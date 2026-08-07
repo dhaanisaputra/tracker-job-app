@@ -26,7 +26,7 @@ export function ConfirmDialog({ open, title, message, confirmLabel = 'Hapus', on
         <button
           type="button"
           onClick={onConfirm}
-          className="rounded-lg bg-ember px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+          className="btn-danger"
         >
           {confirmLabel}
         </button>

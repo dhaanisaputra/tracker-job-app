@@ -3,6 +3,7 @@ const fillByTone: Record<string, string> = {
   moss: 'bg-moss',
   denim: 'bg-denim',
   ember: 'bg-ember',
+  amber: 'bg-amber',
   stone: 'bg-stone',
 }
 const iconTone: Record<string, string> = {
@@ -10,6 +11,7 @@ const iconTone: Record<string, string> = {
   moss: 'text-moss',
   denim: 'text-denim',
   ember: 'text-ember',
+  amber: 'text-amber',
   stone: 'text-stone',
 }
 
@@ -24,27 +26,27 @@ export function StatCard({ label, value, unit, icon, tone = 'primary', progress,
 }) {
   if (solid) {
     return (
-      <div className="relative flex h-32 flex-col justify-between overflow-hidden rounded-xl border border-trailblaze bg-trailblaze p-4 text-white shadow-card transition hover:-translate-y-0.5 hover:shadow-lg">
-        {icon && <div className="absolute -right-4 -top-4 opacity-20">{icon}</div>}
-        <span className="text-label-mono uppercase tracking-wider text-white/80">{label}</span>
+      <div className="relative flex h-28 flex-col justify-between overflow-hidden rounded-lg bg-trailblaze p-4 text-white shadow-card">
+        {icon && <div className="absolute -right-3 -top-3 opacity-20">{icon}</div>}
+        <span className="text-label-xs font-semibold uppercase tracking-wider text-white/80">{label}</span>
         <div className="flex flex-col">
-          <span className="text-stat-lg text-4xl">{value}{unit && <span className="ml-1 text-lg">{unit}</span>}</span>
-          <span className="mt-1 text-sm text-white/80">Pertahankan!</span>
+          <span className="text-stat-lg font-bold">{value}{unit && <span className="ml-1 text-base font-medium text-white/85">{unit}</span>}</span>
+          <span className="mt-0.5 text-xs text-white/80">Pertahankan!</span>
         </div>
       </div>
     )
   }
   return (
-    <div className="relative flex h-32 flex-col justify-between overflow-hidden rounded-xl border border-line bg-surface p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-lg">
+    <div className="card relative flex h-28 flex-col justify-between p-4">
       <div className="flex items-start justify-between">
-        <span className="text-label-mono uppercase tracking-wider text-stone">{label}</span>
-        {icon && <span className={iconTone[tone]}>{icon}</span>}
+        <span className="text-label-xs font-semibold uppercase tracking-wider text-stone">{label}</span>
+        {icon && <span className={`${iconTone[tone]}`}>{icon}</span>}
       </div>
       <div className="flex items-baseline gap-1">
-        <span className="text-stat-lg text-4xl text-ink">{value}</span>
+        <span className="text-stat-lg font-bold text-ink">{value}</span>
         {unit && <span className="text-label-mono text-stone">{unit}</span>}
       </div>
-      <div className="absolute bottom-0 left-0 h-1 w-full bg-stone/10">
+      <div className="absolute bottom-0 left-0 h-0.5 w-full bg-stone/10">
         <div className={`h-full ${fillByTone[tone]}`} style={{ width: `${Math.min(100, progress ?? 0)}%` }} />
       </div>
     </div>

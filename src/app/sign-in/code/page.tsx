@@ -42,7 +42,7 @@ function CodeForm() {
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-lg bg-trailblaze px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+            className="btn-primary w-full"
           >
             {pending ? 'Memverifikasi...' : 'Masuk'}
           </button>

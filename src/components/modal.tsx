@@ -46,12 +46,11 @@ export function Modal({ open, onClose, title, children }: { open: boolean; onClo
         role="dialog"
         aria-modal="true"
         tabIndex={-1}
-        className="relative w-full rounded-t-2xl border border-line bg-surface p-5 shadow-xl outline-none md:max-w-sm md:rounded-2xl"
+        className="relative w-full rounded-lg border border-line bg-surface p-5 shadow-pop outline-none md:max-w-sm"
       >
-        <div className="mx-auto mb-3 h-1 w-8 rounded-full bg-stone/30 md:hidden" />
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-lg font-bold text-ink">{title}</h2>
-          <button onClick={onClose} aria-label="Tutup" className="rounded-lg p-1.5 text-stone hover:bg-stone/10">
+          <h2 className="text-base font-semibold text-ink">{title}</h2>
+          <button onClick={onClose} aria-label="Tutup" className="rounded-md p-1.5 text-stone hover:bg-stone/10">
             <X size={18} />
           </button>
         </div>

@@ -1,111 +1,60 @@
 ---
-name: Momentum Tracker
+name: Lamaranku Admin
 colors:
-  surface: '#fff8f3'
-  surface-dim: '#dfd9d4'
-  surface-bright: '#fff8f3'
-  surface-container-lowest: '#ffffff'
-  surface-container-low: '#f9f2ed'
-  surface-container: '#f3ede8'
-  surface-container-high: '#ede7e2'
-  surface-container-highest: '#e7e1dc'
-  on-surface: '#1d1b18'
-  on-surface-variant: '#584238'
-  inverse-surface: '#32302d'
-  inverse-on-surface: '#f6f0ea'
-  outline: '#8c7166'
-  outline-variant: '#dfc0b3'
-  surface-tint: '#a14000'
-  primary: '#a14000'
-  on-primary: '#ffffff'
-  primary-container: '#ff7a33'
-  on-primary-container: '#622400'
-  inverse-primary: '#ffb694'
-  secondary: '#036c4f'
-  on-secondary: '#ffffff'
-  secondary-container: '#9ef4cf'
-  on-secondary-container: '#127255'
-  tertiary: '#226584'
-  on-tertiary: '#ffffff'
-  tertiary-container: '#6ca8ca'
-  on-tertiary-container: '#003c54'
-  error: '#ba1a1a'
-  on-error: '#ffffff'
-  error-container: '#ffdad6'
-  on-error-container: '#93000a'
-  primary-fixed: '#ffdbcc'
-  primary-fixed-dim: '#ffb694'
-  on-primary-fixed: '#351000'
-  on-primary-fixed-variant: '#7b2f00'
-  secondary-fixed: '#9ef4cf'
-  secondary-fixed-dim: '#82d7b3'
-  on-secondary-fixed: '#002115'
-  on-secondary-fixed-variant: '#00513a'
-  tertiary-fixed: '#c4e7ff'
-  tertiary-fixed-dim: '#92cef2'
-  on-tertiary-fixed: '#001e2c'
-  on-tertiary-fixed-variant: '#004c69'
-  background: '#fff8f3'
-  on-background: '#1d1b18'
-  surface-variant: '#e7e1dc'
-  paper: '#F7F6F3'
-  ember: '#D14343'
-  stone: '#8B887F'
-  stone-light: '#E2E1DE'
+  surface: '#ffffff'
+  surface-muted: '#f7f8fa'
+  surface-sunken: '#f1f3f6'
+  paper: '#eef1f5'
+  ink: '#1b2030'
+  stone: '#5b6478'
+  line: '#e3e7ee'
+  line-strong: '#cfd6e1'
+  trailblaze: '#3a5cd9'
+  trailblaze-soft: '#e9edfd'
+  moss: '#19916c'
+  denim: '#2f7fa8'
+  ember: '#d04444'
+  amber: '#d99a2b'
 typography:
   display-lg:
-    fontFamily: Unbounded
-    fontSize: 48px
+    fontFamily: Plus Jakarta Sans
+    fontSize: 30px
     fontWeight: '700'
-    lineHeight: '1.1'
-    letterSpacing: -0.02em
+    lineHeight: '1.25'
   display-sm:
-    fontFamily: Unbounded
-    fontSize: 32px
-    fontWeight: '700'
-    lineHeight: '1.2'
-  headline-md:
-    fontFamily: Unbounded
+    fontFamily: Plus Jakarta Sans
     fontSize: 24px
     fontWeight: '600'
     lineHeight: '1.3'
   headline-sm:
-    fontFamily: Unbounded
-    fontSize: 18px
-    fontWeight: '600'
-    lineHeight: '1.4'
-  body-lg:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 18px
-    fontWeight: '400'
-    lineHeight: '1.6'
-  body-md:
     fontFamily: Plus Jakarta Sans
     fontSize: 16px
-    fontWeight: '400'
-    lineHeight: '1.5'
-  body-sm:
+    fontWeight: '600'
+    lineHeight: '1.4'
+  stat-lg:
+    fontFamily: Plus Jakarta Sans
+    fontSize: 26px
+    fontWeight: '700'
+    lineHeight: '1'
+  label-mono:
+    fontFamily: IBM Plex Mono
+    fontSize: 12px
+    fontWeight: '600'
+    lineHeight: '1.2'
+    letterSpacing: '0.08em'
+  body-md:
     fontFamily: Plus Jakarta Sans
     fontSize: 14px
     fontWeight: '400'
     lineHeight: '1.5'
-  label-mono:
-    fontFamily: IBM Plex Mono
-    fontSize: 14px
-    fontWeight: '500'
-    lineHeight: '1.0'
-    letterSpacing: 0.02em
-  stat-lg:
-    fontFamily: IBM Plex Mono
-    fontSize: 24px
+  label-xs:
+    fontFamily: Plus Jakarta Sans
+    fontSize: 11px
     fontWeight: '600'
-    lineHeight: '1.0'
 rounded:
-  sm: 0.25rem
+  sm: 0.375rem
   DEFAULT: 0.5rem
-  md: 0.75rem
-  lg: 1rem
-  xl: 1.5rem
+  lg: 0.625rem
   full: 9999px
 spacing:
   base: 4px
@@ -115,99 +64,85 @@ spacing:
   lg: 24px
   xl: 32px
   2xl: 48px
-  3xl: 64px
   container-max: 1280px
   gutter: 16px
 ---
 
 ## Brand & Style
 
-The design system is built for the **Action-Oriented Job Seeker**. It moves away from the sterile, anxiety-inducing atmosphere of traditional spreadsheets, replacing it with an energetic, gamified, and momentum-driven environment. The brand personality is **vibrant, resilient, and forward-moving**.
+Lamaranku is a **professional single-user job-application control center**. It reads as a calm, businesslike admin console rather than a gamified or decorative tracker. The brand personality is **competent, no-nonsense, and clear**.
 
-The aesthetic follows a **Modern Tactical** style: 
-- **High-Contrast Minimalism:** Leveraging the "Paper" and "Ink" foundation to make the "Trailblaze" primary color pop with intentionality.
-- **Vibrant Professionalism:** Using a sophisticated palette that balances urgency (orange/red) with stability (green/blue).
-- **Mobile-First Utility:** Prioritizing thumb-driven interactions, bottom sheets, and clear vertical information hierarchy.
-- **Signature Gamification:** The "Streak Trail" serves as a unique visual anchor, turning the grind of job hunting into a tangible path of progress.
+The aesthetic is a **CoreUI-style admin console**:
+- **Restrained palette:** neutral cool-gray canvas with a single indigo accent. Color is reserved for actions, selection, and state — never decoration.
+- **Data-first density:** scannable tables, compact stat cards, tight component spacing. Information is the interface.
+- **Mobile-first, desktop-denser:** a thumb-friendly bottom tab bar on phones, expanding to a dark slate sidebar + wider table layouts on desktop.
+- **Reusable primitives:** one card, one button set, one form-control vocabulary across every screen.
 
 ## Colors
 
-The color palette is designed for maximum functional clarity.
+Neutrals carry the layout; the accent carries action; status colors carry state.
 
-- **Trailblaze (#FF7A33):** The heartbeat of the system. Used for primary actions, the "Fire" streak icon, and active progress indicators. It signifies energy and heat.
-- **Paper (#F7F6F3) & Ink (#201E1B):** These provide a high-contrast, editorial feel. Use "Paper" for the global background and "Ink" for all primary messaging.
-- **Status Tints:** 
-    - **Moss (#1F7A5C):** Reserved for "Accepted" or "Offer" states.
-    - **Denim (#2E6E8E):** Used for "Applied" and "Screening"—states that are in progress but not yet finalized.
-    - **Ember (#D14343):** Indicates "Rejected" or critical "Delete" actions.
-- **Stone (#8B887F):** Used for borders, secondary labels, and inactive "Streak" dots to maintain a clean, organized structure without visual clutter.
+- **Canvas (`paper` #EEF1F5):** cool light gray app background on desktop and mobile.
+- **Surface (`#FFFFFF`):** white cards on the gray canvas. Cards are defined by hairline borders, not shadows.
+- **Ink (#1B2030) / Stone (#5B6478):** primary and secondary text. Stone also covers placeholders and meta.
+- **Trailblaze (#3A5CD9):** the single indigo accent — primary buttons, active nav, focus rings, selection. Nothing decorative.
+- **Status:** Moss (#19916C) for offer/accepted, Denim (#2F7FA8) for in-progress, Ember (#D04444) for rejected/destructive, Amber (#D99A2B) for streak/heat signals.
 
 ## Typography
 
-This design system uses a tri-font pairing to distinguish between narrative, data, and UI.
+Two faces, one job each.
 
-1.  **Unbounded (Headings):** Used for large page titles and the main streak number. It is bold and expressive, giving the app a modern, tech-forward voice.
-2.  **Plus Jakarta Sans (UI/Body):** The workhorse font. Used for all inputs, button text, and descriptions. Its friendly but professional curves balance the sharpness of Unbounded.
-3.  **IBM Plex Mono (Data):** Used specifically for numerical stats, chart labels, and table cells. The monospaced nature ensures that numbers align perfectly, making data-dense views easier to scan.
+1. **Plus Jakarta Sans (UI):** every heading, label, button, and body string. Weights 600–700 carry hierarchy; a single sans keeps the console calm.
+2. **IBM Plex Mono (Data):** reserved for numeric stats, dates in tables, and measurement — never as decorative "technical" styling.
+
+Type scale is tight (16→24→30px), with 11px uppercase micro-labels for table headers and stat labels.
 
 ## Layout & Spacing
 
-The system follows an **8px grid** to ensure consistency.
-
-### Mobile (Default)
-- **Navigation:** Fixed bottom tab bar for easy thumb access.
-- **Content:** Single column of cards. Margins are fixed at `16px` (md) on the sides.
-- **Modals:** Use **Bottom Sheets** instead of centered modals to allow for easier one-handed use.
-
-### Desktop (≥768px)
-- **Navigation:** Collapsible left sidebar replacing the bottom tab bar.
-- **Content:** Multi-column layout or dense data table.
-- **Grid:** 12-column fluid grid with `24px` gutters. Content is capped at a `1280px` container width.
-
-### Spacing Rhythm
-Generous whitespace is used between sections (`2xl`) to reduce cognitive load during the job search process, while component internal spacing remains tight (`sm` to `md`) to keep related data together.
+- **Mobile (default):** fixed bottom tab bar (5 items); single-column cards; 16px gutters; bottom sheets for confirmations.
+- **Desktop (≥768px):** fixed dark slate-900 sidebar (brand block, search, Menu links, user footer) with collapse to icon rail; white content on gray; 12-column grid capped at 1280px; dense tables.
+- **Spacing rhythm:** 4px base, tight inside components (8–16px), generous between sections (32–48px).
 
 ## Elevation & Depth
 
-Visual hierarchy is achieved through **Tonal Layering** and **Subtle Shadows** rather than heavy depth effects.
-
-- **Level 0 (Background):** Paper (#F7F6F3).
-- **Level 1 (Cards/Surface):** Pure White (#FFFFFF). This creates a crisp distinction from the background.
-- **Level 2 (Active/Hover):** A subtle, highly diffused shadow (e.g., `0 4px 20px rgba(32, 30, 27, 0.04)`) to lift the element.
-- **Borders:** All cards and interactive elements use a `1px` border in `Stone-light` or `Stone` to define their silhouette clearly against the neutral background.
-- **Overlays:** Semi-transparent backdrop blur (12px) for bottom sheets to maintain context of the page behind the interaction.
+- **Level 0:** gray canvas.
+- **Level 1 (cards):** white surface + `1px` hairline border + a soft low-offset shadow (`0 1px 2px` + `0 1px 3px`) for subtle lift.
+- **Level 2 (popovers/menus):** the same hairline border with a larger, softer shadow (`0 10px 24px`).
+- **No colored glows, no hard offset shadows.**
 
 ## Shapes
 
-The design uses a **Rounded (2xl)** shape language to soften the high-contrast color palette and make the app feel approachable.
-
-- **Primary Radius:** `0.5rem` (8px) for inputs and smaller buttons.
-- **Large Radius (2xl):** `1rem` (16px) for cards, dashboard containers, and bottom sheets.
-- **Full Radius (Pill):** Used for status badges and the "Streak Trail" dots to distinguish them from structural UI elements.
-- **Streak Trail Dots:** Small 8x8px circular elements. Active dots are solid `Trailblaze`, while inactive dots are `1px` stone outlines.
+- **Controls (buttons/inputs):** 8px radius (`rounded-md`).
+- **Cards:** 10px radius (`rounded-lg`).
+- **Status badges, streak dots:** pill/full radius.
 
 ## Components
 
 ### Buttons
-- **Primary:** Solid `Trailblaze` with White `Plus Jakarta Sans` text. Bold weight.
-- **Secondary:** Transparent with `1px Stone` border and `Ink` text.
-- **Ghost:** No border/background, used for secondary actions like "Cancel."
+- **Primary:** solid indigo `trailblaze`, white text, shadow-sm, hover darkens, focus ring.
+- **Secondary:** white surface, `line-strong` border, ink text, hover grays.
+- **Ghost:** borderless, stone text, hover tints.
+- **Danger:** `ember` text on hairline `ember` border (`.btn-danger`) for destructive actions.
+- Every button shares one shape (`rounded-md`, same padding, same icon size).
 
 ### Status Badges
-- Small, pill-shaped containers with a subtle background tint (10% opacity of the status color) and solid color text for high legibility (e.g., Moss text on a light Moss tint).
+- Small pill with a 15% tint of the status color and solid status text (e.g. `bg-moss/15 text-moss`). One shared `StatusBadge` component across all surfaces.
 
 ### Input Fields
-- White background, `Stone-light` border, and `16px` (md) padding. Labels should use `IBM Plex Mono` in a smaller size for a "technical" look. Focus state uses a `2px Trailblaze` ring.
+- White surface, `line` border, 8px radius, 8px/12px padding. Labels are 14px medium ink above the field. Focus = `2px` indigo ring at 20% opacity.
 
 ### Cards
-- White background, `1rem` corner radius, `1px Stone-light` border. 
-- **Application Card:** Features the company logo (left), Job Title (Unbounded sm), Status Badge (top right), and the Streak Trail (bottom).
+- White, `rounded-lg`, `1px line` border, low offset shadow. Section headers sit on a `border-b` with a 14px semibold title. Reusable `.card` class everywhere.
 
-### Streak Trail (Signature Component)
-- A horizontal row of 7–14 dots. 
-- Active days are filled with `Trailblaze`. 
-- Current day has a subtle "pulse" animation.
-- Accompanied by a `Fire` icon and an `Unbounded` stat for the total count.
+### Data Table
+- White card wrapper; `surface-muted` header row with 11px uppercase semibold labels; zebra-free rows with `hover:bg-surface-muted`; dates in Plex Mono.
 
-### Bottom Sheets (Mobile)
-- Triggered for filters and "Add New Job" actions. They slide from the bottom, covering 70-90% of the screen height, with a prominent "drag handle" at the top.
+### Dark Sidebar (desktop)
+- slate-900 background, white brand block with indigo logo tile, search-style link, "Menu" section (slate-400 label), links as white-on-hover with a solid indigo pill for the active item, user footer above collapse/theme/logout.
+
+### Streak Trail
+- Amber flame + number; 7 dots (filled `amber`, empty hairline stone). A light motivational signal, not a headline.
+
+## Motion
+
+- 150–200ms transitions for hover/focus/state only. No page-load choreography, no decorative animation. Motion conveys state or nothing.

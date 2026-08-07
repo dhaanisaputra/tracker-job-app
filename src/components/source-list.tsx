@@ -1,10 +1,10 @@
-const dotColors = ['#FF7A33', '#1F7A5C', '#2E6E8E', '#D14343', '#8B887F', '#D9A441']
+const dotColors = ['#3a5cd9', '#19916c', '#2f7fa8', '#d04444', '#d99a2b', '#5b6478']
 
 export function SourceList({ items }: { items: { name: string; value: number }[] }) {
   const total = items.reduce((acc, i) => acc + i.value, 0)
   return (
-    <section className="rounded-xl border border-line bg-surface p-4 shadow-card">
-      <h2 className="font-display text-headline-sm text-ink">Origin Vectors</h2>
+    <section className="card p-4">
+      <h2 className="text-sm font-semibold text-ink">Asal Sumber</h2>
       {items.length === 0 ? (
         <p className="mt-4 text-sm text-stone">Belum ada data sumber.</p>
       ) : (
@@ -13,9 +13,9 @@ export function SourceList({ items }: { items: { name: string; value: number }[]
             <li key={item.name} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full" style={{ backgroundColor: dotColors[i % dotColors.length] }} />
-                <span className="text-body-md text-ink">{item.name}</span>
+                <span className="text-sm text-ink">{item.name}</span>
               </div>
-              <span className="text-stat-lg text-lg text-ink">{total > 0 ? Math.round((item.value / total) * 100) : 0}%</span>
+              <span className="text-lg font-bold text-ink">{total > 0 ? Math.round((item.value / total) * 100) : 0}%</span>
             </li>
           ))}
         </ul>

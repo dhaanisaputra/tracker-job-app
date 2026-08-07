@@ -12,7 +12,7 @@ export function ConfirmDelete({ action, id }: { action: (fd: FormData) => Promis
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1 rounded-lg border border-ember/40 px-3 py-1.5 text-sm font-medium text-ember hover:bg-ember/10"
+        className="btn-danger"
       >
         <Trash2 size={14} /> Hapus
       </button>

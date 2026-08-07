@@ -29,3 +29,6 @@ retention_days = 0
 
 [schedules]
 retention_days = 7
+
+[deployments]
+subdomain = "lacakkerja"

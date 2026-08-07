@@ -2,56 +2,85 @@
 
 :root {
   --nav-w: 16rem;
+
+  /* Neutral scales (light) — professional admin console */
   --surface: #ffffff;
-  --surface-muted: #f3f1ec;
-  --paper: #f7f6f3;
-  --ink: #201e1b;
-  --stone: #8b887f;
-  --line: #e3e0d6;
-  --shadow-card: 0 4px 20px rgba(32, 30, 27, 0.04);
+  --surface-muted: #f7f8fa;
+  --surface-sunken: #f1f3f6;
+  --paper: #eef1f5;            /* app canvas */
+  --ink: #1b2030;              /* primary text */
+  --stone: #5b6478;            /* secondary text */
+  --line: #e3e7ee;             /* borders */
+  --line-strong: #cfd6e1;
+  --shadow-card: 0 1px 2px 0 rgba(16, 24, 40, 0.06), 0 1px 3px 0 rgba(16, 24, 40, 0.08);
+  --shadow-pop: 0 10px 24px -6px rgba(16, 24, 40, 0.18);
 }
 
 .dark {
-  --surface: #1f1d19;
-  --surface-muted: #26231f;
-  --paper: #16150f;
-  --ink: #f2efe9;
-  --stone: #a39f93;
-  --line: #3a362e;
-  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --surface: #1d2230;
+  --surface-muted: #232a3a;
+  --surface-sunken: #181d29;
+  --paper: #14181f;
+  --ink: #e6e9ef;
+  --stone: #9aa3b5;
+  --line: #2b3344;
+  --line-strong: #39445a;
+  --shadow-card: 0 1px 2px 0 rgba(0, 0, 0, 0.25), 0 1px 3px 0 rgba(0, 0, 0, 0.32);
+  --shadow-pop: 0 10px 24px -6px rgba(0, 0, 0, 0.5);
 }
 
 @theme inline {
   --color-background: var(--paper);
   --color-foreground: var(--ink);
   --font-sans: var(--font-jakarta);
-  --font-display: var(--font-display);
+  --font-display: var(--font-jakarta);
   --font-mono: var(--font-mono);
 
-  /* Brand / primary (fixed, no theme flip) */
-  --color-trailblaze: #ff7a33;
-  --color-moss: #1f7a5c;
-  --color-denim: #2e6e8e;
-  --color-ember: #d14343;
+  /* Brand accents (fixed, no theme flip) — professional indigo primary */
+  --color-trailblaze: #3a5cd9;
+  --color-trailblaze-soft: #e9edfd;
+  --color-moss: #19916c;
+  --color-denim: #2f7fa8;
+  --color-ember: #d04444;
+  --color-amber: #d99a2b;
 
   /* Semantic (flip with .dark) */
   --color-paper: var(--paper);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
+  --color-surface-sunken: var(--surface-sunken);
   --color-ink: var(--ink);
   --color-stone: var(--stone);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
 
   /* Typography roles */
-  --text-display-lg: 48px;
-  --text-display-sm: 32px;
-  --text-headline-md: 24px;
-  --text-headline-sm: 18px;
-  --text-stat-lg: 24px;
-  --text-label-mono: 14px;
-  --text-body-md: 16px;
-  --text-body-lg: 18px;
+  --text-display-lg: 30px;
+  --text-display-sm: 24px;
+  --text-headline-sm: 16px;
+  --text-stat-lg: 26px;
+  --text-label-mono: 12px;
+  --text-label-xs: 11px;
+  --text-body-md: 14px;
+}
+
+@theme {
+  --text-display-lg--line-height: 1.25;
+  --text-display-lg--font-weight: 700;
+  --text-display-sm--line-height: 1.3;
+  --text-display-sm--font-weight: 600;
+  --text-headline-sm--line-height: 1.4;
+  --text-headline-sm--font-weight: 600;
+  --text-stat-lg--line-height: 1;
+  --text-stat-lg--font-weight: 700;
+  --text-label-mono--line-height: 1.2;
+  --text-label-mono--letter-spacing: 0.08em;
+  --text-label-mono--font-weight: 600;
+  --text-label-xs--line-height: 1.3;
+  --text-label-xs--font-weight: 600;
+  --text-body-md--line-height: 1.5;
 }
 
 html[data-nav="collapsed"] {
@@ -63,38 +92,24 @@ body {
   color: var(--ink);
 }
 
+/* Restored brand font drop: display face absent on this rebuild */
 @layer components {
   .field {
-    @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition focus:border-transparent focus:ring-2 focus:ring-trailblaze;
+    @apply w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition placeholder:text-stone/70 focus:border-trailblaze focus:ring-2 focus:ring-trailblaze/20;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-1 rounded-lg bg-trailblaze px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-md bg-trailblaze px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-trailblaze/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-trailblaze disabled:opacity-55;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-1 rounded-lg border border-stone/40 px-3 py-2 text-sm font-medium text-ink transition hover:bg-stone/10 disabled:opacity-40;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-md border border-line-strong bg-surface px-3.5 py-2 text-sm font-medium text-ink shadow-sm transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-trailblaze disabled:opacity-45;
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-stone transition hover:bg-stone/10;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-stone transition hover:bg-stone/10 hover:text-ink;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-md border border-ember/40 bg-surface px-3.5 py-2 text-sm font-medium text-ember transition hover:bg-ember/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember disabled:opacity-45;
   }
   .card {
-    @apply rounded-xl border border-line bg-surface p-4 shadow-card;
+    @apply rounded-lg border border-line bg-surface shadow-card;
   }
-}
-
-@theme {
-  --text-display-lg--line-height: 1.1;
-  --text-display-lg--font-weight: 700;
-  --text-display-sm--line-height: 1.2;
-  --text-display-sm--font-weight: 700;
-  --text-headline-md--line-height: 1.3;
-  --text-headline-md--font-weight: 600;
-  --text-headline-sm--line-height: 1.4;
-  --text-headline-sm--font-weight: 600;
-  --text-stat-lg--line-height: 1;
-  --text-stat-lg--font-weight: 600;
-  --text-label-mono--line-height: 1;
-  --text-label-mono--letter-spacing: 0.02em;
-  --text-label-mono--font-weight: 500;
-  --text-body-md--line-height: 1.5;
-  --text-body-lg--line-height: 1.6;
 }

@@ -8,16 +8,16 @@ export type Range = (typeof OPTIONS)[number]['value']
 
 export function RangeFilter({ range, onChange }: { range: Range; onChange: (r: Range) => void }) {
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-1 rounded-md border border-line bg-surface-muted p-1">
       {OPTIONS.map((o) => (
         <button
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
-          className={`rounded-full border px-3 py-1 text-label-mono transition ${
+          className={`rounded px-3 py-1 text-xs font-medium transition ${
             range === o.value
-              ? 'border-trailblaze bg-trailblaze/10 font-bold text-trailblaze'
-              : 'border-line bg-surface text-stone hover:bg-stone/10'
+              ? 'bg-surface text-ink shadow-sm'
+              : 'text-stone hover:bg-surface/60 hover:text-ink'
           }`}
         >
           {o.label}

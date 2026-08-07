@@ -31,7 +31,7 @@ export function ProfileForm({ user, profile }: { user: UserSchema | null; profil
 
   return (
     <div className="space-y-6">
-      <section className="rounded-xl border border-line bg-surface p-4 shadow-card">
+      <section className="card p-4">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-trailblaze/15 font-display text-2xl font-bold text-trailblaze">
             {initialChar}
@@ -43,7 +43,7 @@ export function ProfileForm({ user, profile }: { user: UserSchema | null; profil
         </div>
       </section>
 
-      <form action={updateProfile} className="rounded-xl border border-line bg-surface p-4 shadow-card">
+      <form action={updateProfile} className="card p-4">
         <h2 className="mb-4 font-display text-headline-sm text-ink">Profil</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block sm:col-span-2">
@@ -73,7 +73,7 @@ export function ProfileForm({ user, profile }: { user: UserSchema | null; profil
       </form>
 
       {/* Logout: desktop via sidebar; mobile only here */}
-      <button type="button" onClick={() => setConfirmLogout(true)} className="w-full rounded-lg bg-ember px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 md:hidden">
+      <button type="button" onClick={() => setConfirmLogout(true)} className="btn-danger w-full md:hidden">
         Keluar
       </button>
       <ConfirmDialog

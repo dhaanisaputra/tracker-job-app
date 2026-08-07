@@ -6,12 +6,12 @@ export function Card({ title, subtitle, action, children, className }: {
   className?: string
 }) {
   return (
-    <section className={`rounded-xl border border-line bg-surface p-4 shadow-card ${className ?? ''}`}>
+    <section className={`card p-4 ${className ?? ''}`}>
       {(title || action) && (
-        <div className="mb-4 flex items-start justify-between gap-2">
+        <div className="mb-3.5 flex items-start justify-between gap-2 border-b border-line pb-3">
           <div>
-            {title && <h2 className="font-display text-headline-sm text-ink">{title}</h2>}
-            {subtitle && <p className="mt-0.5 text-sm text-stone">{subtitle}</p>}
+            {title && <h2 className="text-sm font-semibold text-ink">{title}</h2>}
+            {subtitle && <p className="mt-0.5 text-xs text-stone">{subtitle}</p>}
           </div>
           {action}
         </div>

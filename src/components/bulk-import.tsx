@@ -113,7 +113,7 @@ export function BulkImport({ sources }: { sources: Source[] }) {
       {rows.length === 0 ? (
         <button
           onClick={() => inputRef.current?.click()}
-          className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-line bg-surface p-10 text-stone shadow-card hover:border-trailblaze"
+          className="flex w-full flex-col items-center gap-2 rounded-lg border-2 border-dashed border-line bg-surface p-10 text-stone shadow-card hover:border-trailblaze"
         >
           {parsing ? <Loader2 className="animate-spin" /> : <FileUp size={28} />}
           <span className="text-sm font-medium">{parsing ? 'Membaca file...' : 'Pilih file .xlsx atau .csv'}</span>
@@ -124,9 +124,9 @@ export function BulkImport({ sources }: { sources: Source[] }) {
           <p className="text-sm text-stone">
             {rows.length} baris dibaca. Baris kuning terindikasi duplikat, uncheck bila tak ingin diimport.
           </p>
-          <div className="max-h-96 overflow-auto rounded-xl border border-line bg-surface shadow-card">
+          <div className="max-h-96 overflow-auto card">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-paper">
+              <thead className="sticky top-0 bg-surface">
                 <tr className="text-left text-xs uppercase tracking-wide text-stone">
                   <th className="p-2">Import</th>
                   <th className="p-2">Perusahaan</th>
