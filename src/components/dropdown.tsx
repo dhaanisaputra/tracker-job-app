@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 
 export function Dropdown({ value, options, onChange, placeholder = 'Pilih' }: {
   value: string
@@ -15,8 +16,8 @@ export function Dropdown({ value, options, onChange, placeholder = 'Pilih' }: {
   useEffect(() => {
     if (open && btnRef.current) {
       const r = btnRef.current.getBoundingClientRect()
-      // keep panel on-screen horizontally and compact on mobile
-      const width = Math.min(160, r.width)
+      // panel width matches the trigger; keep on-screen horizontally
+      const width = Math.min(r.width, window.innerWidth - 16)
       const left = Math.max(8, Math.min(r.right - width, window.innerWidth - width - 8))
       setPos({ top: r.bottom + 4, left, width })
     }
@@ -31,9 +32,11 @@ export function Dropdown({ value, options, onChange, placeholder = 'Pilih' }: {
         ref={btnRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`w-full truncate rounded-md border border-line bg-surface px-2.5 py-2 text-left text-sm ${value ? 'text-ink' : 'text-stone'}`}
+        aria-expanded={open}
+        className={`flex w-full items-center justify-between gap-2 rounded-md border border-line bg-surface px-2.5 py-2 text-left text-sm ${value ? 'text-ink' : 'text-stone'}`}
       >
-        {current ?? placeholder}
+        <span className="truncate">{current ?? placeholder}</span>
+        <ChevronDown size={16} className={`shrink-0 text-stone transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
         <>
