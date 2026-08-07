@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Line } from 'react-chartjs-2'
 import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler,
@@ -8,9 +9,32 @@ import { Card } from '@/components/card'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler)
 
+function useCssVar(name: string, fallback: string) {
+  const [val, setVal] = useState(fallback)
+  useEffect(() => {
+    const read = () => setVal(getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback)
+    read()
+    const obs = new MutationObserver(read)
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    return () => obs.disconnect()
+  }, [name, fallback])
+  return val
+}
+
+function hexToRgba(hex: string, alpha: number) {
+  const m = hex.match(/^#?([0-9a-f]{6})$/i)
+  if (!m) return hex
+  const n = parseInt(m[1], 16)
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`
+}
+
 export function MomentumChart({ labels, values }: { labels: string[]; values: number[] }) {
+  const line = useCssVar('--line', '#e3e7ee')
+  const stone = useCssVar('--stone', '#5b6478')
+  const grid = hexToRgba(line, 0.5)
+
   return (
-    <Card title="Kemiringan Lamaran" subtitle="Lamaran per periode.">
+    <Card title="Tren Lamaran" subtitle="Jumlah lamaran per periode.">
       <div className="h-64">
         <Line
           data={{
@@ -18,8 +42,8 @@ export function MomentumChart({ labels, values }: { labels: string[]; values: nu
             datasets: [{
               label: 'Lamaran',
               data: values,
-              borderColor: '#FF7A33',
-              backgroundColor: 'rgba(255,122,51,0.15)',
+              borderColor: '#3a5cd9',
+              backgroundColor: 'rgba(58,92,217,0.12)',
               tension: 0.3,
               fill: true,
             }],
@@ -29,8 +53,8 @@ export function MomentumChart({ labels, values }: { labels: string[]; values: nu
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-              x: { grid: { color: 'rgba(139,136,127,0.15)' } },
-              y: { grid: { color: 'rgba(139,136,127,0.15)' }, beginAtZero: true, ticks: { stepSize: 1, precision: 0 } },
+              x: { grid: { color: grid }, ticks: { color: stone } },
+              y: { grid: { color: grid }, beginAtZero: true, ticks: { stepSize: 1, precision: 0, color: stone } },
             },
           }}
         />

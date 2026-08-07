@@ -70,7 +70,7 @@ export function Nav({ user, streak }: { user: { email?: string | null; profile?:
         }`}
       >
         {/* Brand */}
-        <div className={`flex h-16 items-center gap-2.5 border-b border-white/10 px-4 ${collapsed ? 'justify-center px-0' : ''}`}>
+        <div className={`flex border-b border-white/10 ${collapsed ? 'h-auto flex-col items-center justify-center gap-1 px-0 py-2' : 'h-16 items-center gap-2.5 px-4'}`}>
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-trailblaze">
             <Briefcase size={17} className="text-white" />
           </span>
@@ -83,7 +83,7 @@ export function Nav({ user, streak }: { user: { email?: string | null; profile?:
             type="button"
             onClick={toggleCollapse}
             aria-label={collapsed ? 'Buka sidebar' : 'Tutup sidebar'}
-            className={`ml-auto rounded-md p-2 text-slate-400 hover:bg-white/10 hover:text-white ${collapsed ? 'mx-auto ml-0' : ''}`}
+            className={`rounded-md text-slate-400 hover:bg-white/10 hover:text-white ${collapsed ? 'p-1' : 'ml-auto p-2'}`}
           >
             {collapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
           </button>

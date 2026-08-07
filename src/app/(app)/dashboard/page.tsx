@@ -43,10 +43,10 @@ export default async function DashboardPage() {
         <Link href="/lamaran/import" className="btn-secondary">
           <FileUp size={16} /> Impor
         </Link>
-        <ThemeToggle />
         <Link href="/lamaran/baru" className="btn-primary">
           <Plus size={16} /> Tambah
         </Link>
+        <ThemeToggle />
       </PageHeader>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
