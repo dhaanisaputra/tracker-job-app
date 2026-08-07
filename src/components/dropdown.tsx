@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 
-export function Dropdown({ value, options, onChange, placeholder = 'Pilih' }: {
+export function Dropdown({ value, options, onChange, placeholder = 'Pilih', panelWidth }: {
   value: string
   options: { value: string; label: string }[]
   onChange: (v: string) => void
   placeholder?: string
+  panelWidth?: number
 }) {
   const btnRef = useRef<HTMLButtonElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -18,7 +19,7 @@ export function Dropdown({ value, options, onChange, placeholder = 'Pilih' }: {
     if (open && btnRef.current) {
       const r = btnRef.current.getBoundingClientRect()
       // panel width matches the trigger; keep on-screen horizontally
-      const width = Math.min(r.width, window.innerWidth - 16)
+      const width = Math.min(panelWidth ?? r.width, window.innerWidth - 16)
       const left = Math.max(8, Math.min(r.right - width, window.innerWidth - width - 8))
       setPos({ top: r.bottom + 4, left, width })
     }

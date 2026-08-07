@@ -173,6 +173,7 @@ function FullList({ sources }: { sources: Source[] }) {
               options={[{ value: '', label: 'Ubah status...' }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
               onChange={(v) => v && bulkStatus(v)}
               placeholder="Ubah status..."
+              panelWidth={200}
             />
           </div>
         </div>
