@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { startTransition } from 'react'
-import { LayoutDashboard, Briefcase, Tags, BarChart3, User, ChevronsLeft, ChevronsRight, LogOut, Flame, Plus } from 'lucide-react'
+import { LayoutDashboard, Briefcase, BarChart3, Tags, User, ChevronsLeft, ChevronsRight, LogOut } from 'lucide-react'
 import { signOut } from '@/app/auth-actions'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { ConfirmDialog } from '@/components/confirm-dialog'
@@ -24,7 +24,6 @@ export function Nav({ user, streak }: { user: { email?: string | null; profile?:
 
   const displayName = user?.profile?.name || user?.email || ''
   const initialChar = (displayName || '?').charAt(0).toUpperCase()
-  const roleLine = user?.email || ''
 
   useEffect(() => {
     const saved = localStorage.getItem('nav-collapsed') === '1'
@@ -45,7 +44,7 @@ export function Nav({ user, streak }: { user: { email?: string | null; profile?:
   return (
     <>
       {/* Mobile bottom bar */}
-      <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-paper md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-surface md:hidden">
         <div className="grid grid-cols-5">
           {items.map(({ href, label, icon: Icon }) => {
             const active = isActive(href)
@@ -53,11 +52,11 @@ export function Nav({ user, streak }: { user: { email?: string | null; profile?:
               <Link
                 key={href}
                 href={href}
-                className={`flex flex-col items-center gap-0.5 py-2.5 text-xs font-medium ${
+                className={`flex flex-col items-center gap-0.5 py-2.5 text-label-xs font-medium ${
                   active ? 'text-trailblaze' : 'text-stone'
                 }`}
               >
-                <Icon size={20} strokeWidth={active ? 2.5 : 2} />
+                <Icon size={20} strokeWidth={active ? 2.4 : 2} />
                 {label}
               </Link>
             )
@@ -65,42 +64,35 @@ export function Nav({ user, streak }: { user: { email?: string | null; profile?:
         </div>
       </nav>
 
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar — dark admin console */}
       <aside
-        className={`fixed left-0 top-0 hidden h-dvh flex-col border-r border-line bg-paper transition-[width] duration-200 md:flex ${
+        className={`fixed left-0 top-0 hidden h-dvh flex-col border-r border-black/10 bg-slate-900 text-slate-300 transition-[width] duration-200 md:flex ${
           collapsed ? 'w-[4.5rem]' : 'w-64'
         }`}
       >
         {/* Brand */}
-        <div className={`flex items-center gap-2 px-3 py-5 ${collapsed ? 'justify-center px-0' : ''}`}>
-          <span className="h-3 w-3 shrink-0 rounded-full bg-trailblaze" />
+        <div className={`flex h-16 items-center gap-2.5 border-b border-white/10 px-4 ${collapsed ? 'justify-center px-0' : ''}`}>
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-trailblaze">
+            <Briefcase size={17} className="text-white" />
+          </span>
           {!collapsed && (
-            <span className="font-display text-xl font-extrabold leading-none tracking-tight">
-              <span className="text-trailblaze">Lamar</span>
-              <span className="text-ink">anku</span>
+            <span className="text-lg font-bold leading-none tracking-tight text-white">
+              Lamaranku
             </span>
           )}
+          <button
+            type="button"
+            onClick={toggleCollapse}
+            aria-label={collapsed ? 'Buka sidebar' : 'Tutup sidebar'}
+            className={`ml-auto rounded-md p-2 text-slate-400 hover:bg-white/10 hover:text-white ${collapsed ? 'mx-auto ml-0' : ''}`}
+          >
+            {collapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
+          </button>
         </div>
 
-        {/* Profile header */}
-        {!collapsed && (
-          <div className="mx-2 mb-4 flex items-center gap-3 border-b border-line px-2 pb-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-trailblaze/15 font-display text-lg font-bold text-trailblaze">
-              {initialChar}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-display text-sm font-bold text-ink">{displayName}</p>
-              <div className="mt-0.5 flex items-center gap-1">
-                <Flame size={12} className="text-trailblaze" fill="currentColor" />
-                <span className="font-mono text-xs font-bold text-trailblaze">{streak} hari streak</span>
-              </div>
-              <p className="truncate text-xs text-stone">{roleLine}</p>
-            </div>
-          </div>
-        )}
-
         {/* Nav links */}
-        <nav className="flex flex-col gap-1 px-2">
+        <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
+          <p className={`mb-1 px-2 text-label-xs font-semibold uppercase tracking-wider text-slate-400 ${collapsed ? 'hidden' : ''}`}>Menu</p>
           {items.map(({ href, label, icon: Icon }) => {
             const active = isActive(href)
             return (
@@ -108,39 +100,38 @@ export function Nav({ user, streak }: { user: { email?: string | null; profile?:
                 key={href}
                 href={href}
                 title={collapsed ? label : undefined}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition ${
                   collapsed ? 'justify-center px-0' : ''
-                } ${active ? 'bg-trailblaze/15 text-trailblaze' : 'text-stone hover:bg-stone/10'}`}
+                } ${active ? 'bg-trailblaze text-white shadow-sm' : 'text-slate-300 hover:bg-white/10 hover:text-white'}`}
               >
-                <Icon size={18} strokeWidth={active ? 2.5 : 2} className="shrink-0" />
+                <Icon size={18} strokeWidth={active ? 2.4 : 2} className="shrink-0" />
                 {!collapsed && label}
               </Link>
             )
           })}
         </nav>
 
-        {/* Bottom */}
-        <div className="mt-auto flex flex-col gap-1 px-2 pb-4">
-          <Link
-            href="/lamaran/baru"
-            title={collapsed ? 'Tambah Lamaran' : undefined}
-            className={`inline-flex items-center justify-center gap-1 rounded-lg bg-trailblaze px-3 py-2 text-sm font-semibold text-white transition hover:opacity-90 ${
-              collapsed ? 'w-full' : ''
-            }`}
-          >
-            <Plus size={16} /> {!collapsed && 'Tambah Lamaran'}
-          </Link>
-          <div className={`flex items-center gap-1 ${collapsed ? 'flex-col' : 'justify-between'}`}>
-            <ThemeToggle />
-            <button type="button" onClick={toggleCollapse} aria-label={collapsed ? 'Buka sidebar' : 'Tutup sidebar'} className="rounded-lg p-2 text-stone hover:bg-stone/10">
-              {collapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
-            </button>
+        {/* User + bottom */}
+        <div className="border-t border-white/10 p-3">
+          {!collapsed && (
+            <div className="mb-3 flex items-center gap-2.5 px-1">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-white">
+                {initialChar}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-white">{displayName}</p>
+                <p className="truncate text-xs text-slate-400">{streak} hari streak</p>
+              </div>
+            </div>
+          )}
+          <div className={`flex items-center gap-1 ${collapsed ? 'flex-col' : ''}`}>
+            <ThemeToggle dark />
           </div>
           <button
             type="button"
             onClick={() => setConfirmLogout(true)}
             title={collapsed ? 'Keluar' : undefined}
-            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-ember hover:bg-ember/10 ${
+            className={`mt-1 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-400 transition hover:bg-ember/20 hover:text-red-300 ${
               collapsed ? 'justify-center px-0' : ''
             }`}
           >
