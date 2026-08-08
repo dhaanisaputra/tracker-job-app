@@ -7,6 +7,7 @@ import { startTransition } from 'react'
 import { LayoutDashboard, Briefcase, BarChart3, Tags, User, ChevronsLeft, ChevronsRight, LogOut } from 'lucide-react'
 import { signOut } from '@/app/auth-actions'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { BrandMark } from '@/components/brand-mark'
 
 const items = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -70,12 +71,10 @@ export function Nav({ user, streak }: { user: { email?: string | null; profile?:
         }`}
       >
         {/* Brand */}
-        <div className={`flex border-b border-white/10 ${collapsed ? 'h-auto flex-col items-center justify-center gap-1 px-0 py-2' : 'h-16 items-center gap-2.5 px-4'}`}>
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-trailblaze">
-            <Briefcase size={17} className="text-white" />
-          </span>
+        <div className={`flex ${collapsed ? 'h-auto flex-col items-center justify-center gap-1 px-0 py-2' : 'h-16 items-center gap-2.5 px-4'}`}>
+          <BrandMark size={collapsed ? 30 : 28} />
           {!collapsed && (
-            <span className="text-lg font-bold leading-none tracking-tight text-white">
+            <span className="bg-gradient-to-r from-[#7c93f0] to-[#4db3e0] bg-clip-text text-lg font-bold leading-none tracking-tight text-transparent">
               Lamaranku
             </span>
           )}

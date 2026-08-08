@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import { sendOtp } from '@/app/auth-actions'
+import { BrandMark } from '@/components/brand-mark'
 
 export default function SignInPage() {
   const [state, action, pending] = useActionState(sendOtp, undefined)
@@ -10,8 +11,8 @@ export default function SignInPage() {
     <main className="flex min-h-dvh flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-2 mb-2">
-          <span className="h-3 w-3 rounded-full bg-trailblaze" />
-          <span className="text-sm font-semibold text-stone">Lamaranku</span>
+          <BrandMark size={22} />
+          <span className="bg-gradient-to-r from-[#3a5cd9] to-[#2f7fa8] bg-clip-text text-sm font-semibold text-transparent">Lamaranku</span>
         </div>
         <h1 className="font-display text-2xl font-bold text-ink mb-1">Masuk untuk melacak lamaran</h1>
         <p className="text-sm text-stone mb-8">
