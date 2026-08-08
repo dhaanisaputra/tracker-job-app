@@ -29,6 +29,18 @@ export async function verifyOtp(prev: { error?: string } | undefined, formData: 
   redirect('/dashboard')
 }
 
+export async function resendOtp(prev: { error?: string; message?: string } | undefined, formData: FormData) {
+  const email = String(formData.get('email') ?? '')
+  if (!email) return { error: 'Email is required' }
+
+  const auth = createAuthActions({ cookies: await cookies() })
+  const { error } = await auth.signInWithOtp({ email })
+
+  if (error) return { error: error.message }
+
+  return { message: 'Kode baru sudah dikirim ke email kamu' }
+}
+
 export async function signOut() {
   const auth = createAuthActions({ cookies: await cookies() })
   await auth.signOut()

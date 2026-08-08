@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { startTransition } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { Search, Loader2, CheckSquare, Square, Trash2, MoreHorizontal, Pencil, Eye, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Loader2, CheckSquare, Square, Trash2, MoreHorizontal, Pencil, Eye, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
 import { insforge } from '@/lib/browser-client'
 import { STATUSES, STATUS_COLORS } from '@/lib/types'
 import type { ApplicationWithSource, Source } from '@/lib/types'
@@ -107,6 +107,15 @@ function FullList({ sources }: { sources: Source[] }) {
     },
   })
 
+  const hasFilter = debounced !== '' || status !== '' || source !== ''
+  const resetFilters = () => {
+    setSearch('')
+    setDebounced('')
+    setStatus('')
+    setSource('')
+    setPage(0)
+  }
+
   const items = data?.items ?? []
   const totalPages = data ? Math.max(1, Math.ceil(data.count / PAGE_SIZE)) : 1
 
@@ -179,6 +188,15 @@ function FullList({ sources }: { sources: Source[] }) {
               placeholder="Sumber"
             />
           </div>
+          <button
+            type="button"
+            onClick={resetFilters}
+            disabled={!hasFilter}
+            className="col-span-2 inline-flex items-center justify-center gap-1.5 rounded-md border border-line px-3 py-2 text-sm font-medium text-stone transition-colors hover:border-ember/40 hover:text-ember disabled:cursor-not-allowed disabled:opacity-40 sm:mt-0"
+          >
+            <RotateCcw size={14} />
+            Reset
+          </button>
         </div>
       </div>
 
