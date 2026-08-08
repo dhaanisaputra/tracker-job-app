@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { startTransition } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { Search, Loader2, CheckSquare, Square, Trash2, MoreHorizontal, Pencil, Eye } from 'lucide-react'
+import { Search, Loader2, CheckSquare, Square, Trash2, MoreHorizontal, Pencil, Eye, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { insforge } from '@/lib/browser-client'
 import { STATUSES, STATUS_COLORS } from '@/lib/types'
 import type { ApplicationWithSource, Source } from '@/lib/types'
@@ -76,6 +76,7 @@ function FullList({ sources }: { sources: Source[] }) {
   const [status, setStatus] = useState('')
   const [source, setSource] = useState('')
   const [page, setPage] = useState(0)
+  const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' }>({ key: 'applied_date', dir: 'desc' })
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [confirmBulk, setConfirmBulk] = useState(false)
@@ -90,14 +91,15 @@ function FullList({ sources }: { sources: Source[] }) {
   }
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['applications', debounced, status, source, page],
+    queryKey: ['applications', debounced, status, source, sort.key, sort.dir, page],
     queryFn: async () => {
-      let q = insforge.database.from('job_applications').select('id, company_name, role_title, current_status, task_deadline, applied_date, source_id, sources(name)', { count: 'exact' }).order('applied_date', { ascending: false })
+      let q = insforge.database.from('job_applications').select('id, company_name, role_title, current_status, task_deadline, applied_date, source_id, sources(name)', { count: 'exact' })
       if (debounced) {
         q = q.or(`company_name.ilike.%${debounced}%,role_title.ilike.%${debounced}%`)
       }
       if (status) q = q.eq('current_status', status)
       if (source) q = q.eq('source_id', source)
+      q = q.order(sort.key, { ascending: sort.dir === 'asc' })
       q = q.range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
       const res = await q
       return { items: (res.data ?? []) as unknown as ApplicationWithSource[], count: res.count ?? 0 }
@@ -106,6 +108,11 @@ function FullList({ sources }: { sources: Source[] }) {
 
   const items = data?.items ?? []
   const totalPages = data ? Math.max(1, Math.ceil(data.count / PAGE_SIZE)) : 1
+
+  function toggleSort(key: string) {
+    setPage(0)
+    setSort((prev) => (prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'desc' }))
+  }
 
   function toggleSelect(id: string) {
     setSelected((prev) => {
@@ -223,11 +230,11 @@ function FullList({ sources }: { sources: Source[] }) {
               <thead>
                 <tr className="border-b border-line bg-surface-muted text-left text-label-xs uppercase tracking-wider text-stone">
                   <th className="p-3 font-semibold" />
-                  <th className="p-3 font-semibold">Perusahaan</th>
-                  <th className="p-3 font-semibold">Role</th>
-                  <th className="p-3 font-semibold">Sumber</th>
-                  <th className="p-3 font-semibold">Tanggal</th>
-                  <th className="p-3 font-semibold">Status</th>
+                  <SortHeader label="Perusahaan" sortKey="company_name" sort={sort} onSort={toggleSort} />
+                  <SortHeader label="Role" sortKey="role_title" sort={sort} onSort={toggleSort} />
+                  <SortHeader label="Sumber" sortKey="sources(name)" sort={sort} onSort={toggleSort} />
+                  <SortHeader label="Tanggal" sortKey="applied_date" sort={sort} onSort={toggleSort} />
+                  <SortHeader label="Status" sortKey="current_status" sort={sort} onSort={toggleSort} />
                   <th className="p-3" />
                 </tr>
               </thead>
@@ -258,25 +265,13 @@ function FullList({ sources }: { sources: Source[] }) {
             </table>
           </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between text-sm">
-              <button
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-                disabled={page === 0}
-                className="btn-secondary px-3 py-1.5"
-              >
-                Sebelumnya
-              </button>
-              <span className="text-stone">Hal {page + 1} / {totalPages}</span>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                disabled={page >= totalPages - 1}
-                className="btn-secondary px-3 py-1.5"
-              >
-                Berikutnya
-              </button>
-            </div>
-          )}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={data?.count ?? 0}
+            pageSize={PAGE_SIZE}
+            onPage={setPage}
+          />
         </>
       )}
       <ConfirmDialog
@@ -290,6 +285,92 @@ function FullList({ sources }: { sources: Source[] }) {
           runBulkDelete()
         }}
       />
+    </div>
+  )
+}
+
+function SortHeader({ label, sortKey, sort, onSort }: {
+  label: string
+  sortKey: string
+  sort: { key: string; dir: 'asc' | 'desc' }
+  onSort: (key: string) => void
+}) {
+  const active = sort.key === sortKey
+  return (
+    <th className="p-3">
+      <button
+        type="button"
+        onClick={() => onSort(sortKey)}
+        className={`inline-flex items-center gap-1 font-semibold uppercase tracking-wider transition hover:text-ink ${active ? 'text-trailblaze' : 'text-stone'}`}
+      >
+        {label}
+        <span className="flex flex-col leading-none">
+          <ChevronUp size={10} className={`-mb-0.5 ${active && sort.dir === 'asc' ? 'text-trailblaze' : 'text-stone/40'}`} />
+          <ChevronDown size={10} className={`${active && sort.dir === 'desc' ? 'text-trailblaze' : 'text-stone/40'}`} />
+        </span>
+      </button>
+    </th>
+  )
+}
+
+function Pagination({ page, totalPages, total, pageSize, onPage }: {
+  page: number
+  totalPages: number
+  total: number
+  pageSize: number
+  onPage: (p: number) => void
+}) {
+  if (total === 0) return null
+  const from = total === 0 ? 0 : page * pageSize + 1
+  const to = Math.min(total, (page + 1) * pageSize)
+
+  // window of page numbers: first, last, neighbors of current
+  const pages = new Set<number>([0, totalPages - 1, page - 1, page, page + 1])
+  const list = [...pages].filter((p) => p >= 0 && p < totalPages).sort((a, b) => a - b)
+  const items: (number | '...')[] = []
+  let prev = -2
+  for (const p of list) {
+    if (p - prev > 1) items.push('...')
+    items.push(p)
+    prev = p
+  }
+
+  const cls = (disabled: boolean) =>
+    `inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-sm font-medium transition disabled:opacity-40 disabled:pointer-events-none ${
+      disabled ? 'text-stone' : 'text-ink hover:bg-surface-muted'
+    }`
+
+  return (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm text-stone">
+        Menampilkan <span className="font-semibold text-ink">{from}-{to}</span> dari{' '}
+        <span className="font-semibold text-ink">{total}</span> lamaran
+      </p>
+      <nav className="flex items-center gap-1" aria-label="Paginasi">
+        <button type="button" onClick={() => onPage(Math.max(0, page - 1))} disabled={page === 0} className={cls(page === 0)} aria-label="Halaman sebelumnya">
+          <ChevronLeft size={16} />
+        </button>
+        {items.map((p, i) =>
+          p === '...' ? (
+            <span key={`e${i}`} className="px-1 text-sm text-stone">…</span>
+          ) : (
+            <button
+              key={p}
+              type="button"
+              onClick={() => onPage(p)}
+              aria-current={p === page ? 'page' : undefined}
+              className={`inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-sm font-semibold transition ${
+                p === page ? 'bg-trailblaze text-white shadow-sm' : 'text-ink hover:bg-surface-muted'
+              }`}
+            >
+              {p + 1}
+            </button>
+          ),
+        )}
+        <button type="button" onClick={() => onPage(Math.min(totalPages - 1, page + 1))} disabled={page >= totalPages - 1} className={cls(page >= totalPages - 1)} aria-label="Halaman berikutnya">
+          <ChevronRight size={16} />
+        </button>
+      </nav>
     </div>
   )
 }
