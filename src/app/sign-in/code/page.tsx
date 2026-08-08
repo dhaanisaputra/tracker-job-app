@@ -4,7 +4,7 @@ import { Suspense, useActionState, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { verifyOtp, resendOtp } from '@/app/auth-actions'
-import { ArrowLeft, Clock, RefreshCcw } from 'lucide-react'
+import { ArrowLeft, RefreshCcw } from 'lucide-react'
 
 const OTP_TTL = 300 // kode berlaku 5 menit (InsForge)
 
@@ -45,11 +45,6 @@ function CodeForm() {
         <p className="text-sm text-stone mb-6">
           Kode 6 digit sudah dikirim ke <span className="font-medium text-ink">{email}</span>
         </p>
-
-        <div className="mb-4 inline-flex items-center gap-2 rounded-md bg-amber/10 px-3 py-1.5 text-xs font-medium text-amber">
-          <Clock size={14} />
-          {expired ? 'Kode kadaluarsa' : `Kode berlaku ${formatTime(secondsLeft)}`}
-        </div>
 
         <form action={action} className="space-y-4">
           <input type="hidden" name="email" value={email} />
