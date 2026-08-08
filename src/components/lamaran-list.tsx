@@ -77,6 +77,7 @@ function FullList({ sources }: { sources: Source[] }) {
   const [source, setSource] = useState('')
   const [page, setPage] = useState(0)
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' }>({ key: 'applied_date', dir: 'desc' })
+  const DEFAULT_SORT = { key: 'applied_date', dir: 'desc' as const }
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [confirmBulk, setConfirmBulk] = useState(false)
@@ -111,7 +112,14 @@ function FullList({ sources }: { sources: Source[] }) {
 
   function toggleSort(key: string) {
     setPage(0)
-    setSort((prev) => (prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'desc' }))
+    setSort((prev) => {
+      // third click on the same column returns to the default sort
+      if (prev.key === key) {
+        if (prev.dir === 'asc') return { key, dir: 'desc' }
+        return DEFAULT_SORT
+      }
+      return { key, dir: 'asc' }
+    })
   }
 
   function toggleSelect(id: string) {

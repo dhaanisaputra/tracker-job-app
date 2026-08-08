@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const streak = calcStreak((datesRes.data ?? []).map((d) => (d as { applied_date: string }).applied_date))
 
   return (
-    <div className="mx-auto w-full max-w-7xl pb-20 md:pb-0">
+    <div className="mx-auto w-full max-w-[100rem] pb-20 md:pb-0">
       <div className="md:pl-[var(--nav-w)]">{children}</div>
       <Nav user={user} streak={streak} />
       <Toaster />
