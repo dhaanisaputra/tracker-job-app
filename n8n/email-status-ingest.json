@@ -1,0 +1,274 @@
+{
+  "id": "b7e4f2a1-8c3d-4e5f-9a6b-1c2d3e4f5a6b",
+  "name": "email-status-ingest",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute",
+              "value": 10
+            }
+          ]
+        },
+        "filters": {
+          "q": "from:(jobstreet.co.id OR jobstreet.com OR glints.com OR linkedin.com OR dealls.com)"
+        }
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all();\nconst first = (items[0] && items[0].json) || {};\nconst rawFrom = first.from?.value?.[0]?.address\n  ?? first.from?.value\n  ?? first.from?.address\n  ?? first.from\n  ?? '';\nconst sender = typeof rawFrom === 'string' ? rawFrom : JSON.stringify(rawFrom);\nconst subject = first.subject ?? first.headers?.subject ?? '';\nconst body = first.text ?? first.textPlain ?? first.snippet ?? first.body ?? '';\nreturn [{ json: { sender, subject, body: String(body).slice(0, 4000) } }];"
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Code Normalize",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.body }}",
+        "schemaType": "fromJson",
+        "inputSchema": "{\"type\":\"object\",\"properties\":{\"company\":{\"type\":\"string\"},\"role\":{\"type\":\"string\"},\"portal_status\":{\"type\":\"string\"},\"job_url\":{\"type\":\"string\"}},\"required\":[\"company\",\"role\",\"portal_status\"]}",
+        "systemPrompt": "Ekstrak dari email notifikasi lamaran kerja. portal_status = status mentah sesuai teks email (contoh: 'Lamaran Dilihat', 'Shortlisted', 'Interview Invitation'). job_url = tautan loker bila ada, else ''."
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "ParseEmail",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const parsed = $input.first().json;\nconst norm = $('Code Normalize').first().json;\nconst portal = String(parsed.portal_status ?? '');\nconst sender = String(norm.sender ?? '').toLowerCase();\nconst lower = portal.toLowerCase();\nconst has = (...keys) => keys.some((k) => lower.includes(k));\nlet status = null;\nif (has('dilihat', 'viewed', 'seen')) status = 'Screening';\nelse if (has('diproses', 'in review', 'shortlisted', 'shortlist')) status = 'Screening';\nelse if (has('interview', 'diundang', 'wawancara')) status = 'HR Interview';\nelse if (has('offer', 'offering')) status = 'Offer';\nelse if (has('diterima', 'accepted', 'hired')) status = 'Accepted';\nelse if (has('ditolak', 'rejected')) status = 'Rejected';\nelse if (has('dibatalkan', 'withdrawn')) status = 'Withdrawn';\nlet source = 'Website Perusahaan';\nif (sender.includes('jobstreet')) source = 'JobStreet';\nelse if (sender.includes('glints')) source = 'Glints';\nelse if (sender.includes('linkedin')) source = 'LinkedIn';\nelse if (sender.includes('dealls')) source = 'Dealls';\nreturn [{ json: { company: parsed.company ?? '', role: parsed.role ?? '', status, source, job_url: parsed.job_url ?? '', notes: norm.subject ?? '' } }];"
+      },
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "name": "Code MapStatus",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://5fr37au2.ap-southeast.insforge.app/functions/n8n-ingest",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-ingest-secret",
+              "value": "__PASTE_SECRET_IN_UI__"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "a1b2c3d4-0005-4000-8000-000000000005",
+      "name": "HTTP Request Ingest",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-needs-review",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "needs_review",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true
+      },
+      "id": "a1b2c3d4-0006-4000-8000-000000000006",
+      "name": "IF NeedsReview",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-updated",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "updated",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "cond-created",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "created",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true
+      },
+      "id": "a1b2c3d4-0007-4000-8000-000000000007",
+      "name": "IF Changed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1560, 420]
+    },
+    {
+      "parameters": {
+        "chatId": "",
+        "text": "=⚠️ Perlu cek manual: *{{ $('Code MapStatus').item.json.company }} – {{ $('Code MapStatus').item.json.role }}*. Kandidat: {{ JSON.stringify($('HTTP Request Ingest').item.json.candidates) }}",
+        "additionalFields": {}
+      },
+      "id": "a1b2c3d4-0008-4000-8000-000000000008",
+      "name": "Telegram Review",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1560, 180]
+    },
+    {
+      "parameters": {
+        "chatId": "",
+        "text": "={{ $('HTTP Request Ingest').item.json.action === 'created' ? '➕ Baru: *' + $('Code MapStatus').item.json.company + ' – ' + $('Code MapStatus').item.json.role + '* (' + $('Code MapStatus').item.json.status + ')' : '✅ *' + $('Code MapStatus').item.json.company + ' – ' + $('Code MapStatus').item.json.role + '*: ' + $('HTTP Request Ingest').item.json.prev_status + ' → ' + $('Code MapStatus').item.json.status }}",
+        "additionalFields": {}
+      },
+      "id": "a1b2c3d4-0009-4000-8000-000000000009",
+      "name": "Telegram Done",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1780, 420]
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Normalize": {
+      "main": [
+        [
+          {
+            "node": "ParseEmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ParseEmail": {
+      "main": [
+        [
+          {
+            "node": "Code MapStatus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code MapStatus": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request Ingest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request Ingest": {
+      "main": [
+        [
+          {
+            "node": "IF NeedsReview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF NeedsReview": {
+      "main": [
+        [
+          {
+            "node": "Telegram Review",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF Changed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Changed": {
+      "main": [
+        [
+          {
+            "node": "Telegram Done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Jakarta"
+  }
+}
