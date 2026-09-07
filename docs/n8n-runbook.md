@@ -4,7 +4,7 @@ Panduan untuk pemula n8n. Semua langkah non-coding ada di sini. Tidak ada nilai 
 
 Prasyarat: repo ini sudah di-clone di laptop. Semua perintah dijalankan dari root repo (`D:\Project-Study\Tracker Job App\tracker-job-app` atau folder clone Anda), kecuali disebut lain.
 
-Alur singkat: **Gmail Trigger** polling Gmail → **Code Normalize** → **ParseEmail** (Information Extractor + LLM) → **Code MapStatus** → **HTTP Request Ingest** (POST ke edge function `n8n-ingest`) → **IF NeedsReview** → **Telegram Review** / **IF Changed** → **Telegram Done**. Workflow kedua: **Schedule Trigger** → **HTTP Request Summary** → **Code Format** → **Telegram** (rekap 07:00 WIB).
+Alur singkat: **Gmail Trigger** polling Gmail → **Code Normalize** → **ParseEmail** (Information Extractor + LLM) → **Code MapStatus** → **HTTP Request Ingest** (POST ke edge function `n8n-ingest`) → **IF Ok** → **IF NeedsReview** → **Telegram Review** / **IF Changed** → **Telegram Done**. Gagal ingest (`ok: false`) → **Telegram Alarm** (`🔥 Ingest gagal: ...`). `unchanged` diam tanpa notif (by design). Workflow kedua: **Schedule Trigger** → **HTTP Request Summary** → **Code Format** → **Telegram** (rekap 07:00 WIB). Workflow ketiga: **error-alarm** (**Error Trigger** → **Telegram**) — pasang sebagai Error Workflow di kedua workflow di atas (langkah di §9).
 
 ---
 
@@ -27,7 +27,7 @@ Alur singkat: **Gmail Trigger** polling Gmail → **Code Normalize** → **Parse
 2. Cek `docker ps` — harus ada container image `n8nio/n8n` dengan port `5678`.
 3. Buka `http://localhost:5678` di browser.
 4. Saat pertama dibuka, n8n meminta pembuatan akun owner (email + nama + password). Isi dan simpan — ini akun admin n8n lokal Anda.
-5. Import workflow (sudah ada di repo, status nonaktif): di n8n klik **⋯ (menu, pojok kiri atas/kanan)** → **Import from File** → pilih `n8n/email-status-ingest.json`, lalu ulangi untuk `n8n/daily-summary.json`. Biarkan keduanya **Inactive** dulu sampai langkah 7 selesai.
+5. Import workflow (sudah ada di repo, status nonaktif): di n8n klik **⋯ ( titik tiga, pojok kanan atas header workflow list/editor — menu "⋯" → Import from File)** → pilih `n8n/email-status-ingest.json`, ulangi untuk `n8n/daily-summary.json` dan `n8n/error-alarm.json`. Biarkan ketiganya **Inactive** dulu sampai langkah 7 selesai.
 
 ## 3. Kredensial Gmail (OAuth2)
 
@@ -44,10 +44,11 @@ Alur singkat: **Gmail Trigger** polling Gmail → **Code Normalize** → **Parse
 1. Di Telegram, chat ke **@BotFather** → kirim `/newbot` → ikuti prompt (nama + username bot) → BotFather memberi **token bot**. Simpan token itu di tempat aman (jangan di-commit).
 2. Cari tahu chat ID Anda: chat ke **@userinfobot** → ia membalas dengan ID numerik Anda. Catat.
 3. Di n8n: **Credentials → New → Telegram** (atau dari node **Telegram Review** / **Telegram Done** / **Telegram** di workflow `daily-summary` → Credential → Create new) → isi **Access Token** dengan token bot → **Save**.
-4. Isi **Chat ID** di ketiga node Telegram dengan ID dari langkah 2:
-   - Workflow `email-status-ingest`: node **Telegram Review**, node **Telegram Done**.
-   - Workflow `daily-summary`: node **Telegram**.
-5. Kirim pesan tes: buka node **Telegram Done** → klik **Execute step** / **Test step** (atau jalankan manual workflow dengan data dummy) → cek pesan masuk di Telegram Anda.
+4. Isi **Chat ID** di node Telegram berikut (chatId kosong di JSON repo — wajib diisi di UI, jangan commit nilainya):
+    - Workflow `email-status-ingest`: node **Telegram Review**, **Telegram Done**, **Telegram Alarm**.
+    - Workflow `daily-summary`: node **Telegram**.
+    - Workflow `error-alarm`: node **Telegram**.
+5. Kirim pesan tes: buka node Telegram yang mau dites → klik **Execute step** pada node itu saja (jangan full-run workflow dengan data dummy) → cek pesan masuk di Telegram Anda.
 6. Verifikasi format: pesan harus menampilkan **emoji** (⚠️ / ✅ / ➕ / ☀️) dan **teks tebal** (tanda `*...*` dirender bold, bukan tampil sebagai bintang mentah). Jika bintang tampil mentah atau emoji jadi `?`, buka node Telegram → **Additional Fields / Parse Mode** → set ke **Markdown** (atau MarkdownV2) → tes ulang.
 
 ## 5. Kredensial LLM (dipasang ke node ParseEmail)
@@ -97,11 +98,12 @@ Nilai secret tidak tertulis di runbook ini. Caranya:
   docker compose -f n8n/docker-compose.yml up -d
   ```
 - **Data tersimpan di volume Docker `n8n_data`** (didefinisikan di `n8n/docker-compose.yml`). Menghapus container tidak menghilangkan data selama volume tidak dihapus. Jangan jalankan `docker volume rm` / `docker compose down -v` kecuali paham risikonya.
-- **Backup workflow:** setiap kali mengubah workflow di UI, ekspor ulang dan commit:
-  ```powershell
-  docker exec n8n-n8n-1 n8n export:workflow --all
-  ```
-  (Jika nama container berbeda, lihat dari `docker ps`.) Simpan hasilnya ke `n8n/email-status-ingest.json` dan `n8n/daily-summary.json`, lalu commit seperti biasa. Pastikan tidak ada nilai secret ikut tersimpan (lihat langkah 6.4).
+- **Backup workflow:** setiap kali mengubah workflow di UI, ekspor ulang per workflow dan commit:
+   ```powershell
+   docker exec n8n-n8n-1 n8n export:workflow --id=<id-workflow> --output=/tmp/wf.json
+   ```
+   Cek flag yang tersedia di instalasi Anda dengan `docker exec n8n-n8n-1 n8n export:workflow --help` (nama flag output bisa berbeda antar versi n8n; alternatif: `docker exec n8n-n8n-1 n8n export:workflow --all --output=/tmp/all.json`). Lalu `docker cp n8n-n8n-1:/tmp/wf.json n8n/email-status-ingest.json` (ulangi per workflow).
+   (Jika nama container berbeda, lihat dari `docker ps`.) Simpan hasilnya ke `n8n/email-status-ingest.json`, `n8n/daily-summary.json`, dan `n8n/error-alarm.json`, lalu commit seperti biasa. Pastikan tidak ada nilai secret ikut tersimpan (lihat langkah 6.4).
 
 ## 9. Troubleshooting
 
@@ -109,6 +111,7 @@ Nilai secret tidak tertulis di runbook ini. Caranya:
 |---|---|---|
 | Gmail error / auth expired, workflow gagal di **Gmail Trigger** | Token OAuth Google kedaluwarsa atau consent dicabut | Buka kredensial Gmail di n8n → **Reconnect** → login ulang akun Gmail → eksekusi manual node **Gmail Trigger** untuk memastikan sukses |
 | Edge function balas `401 { "ok": false, "error": "unauthorized" }` di output node **HTTP Request Ingest** / **HTTP Request Summary** | Nilai header `x-ingest-secret` salah / belum ditempel | Minta ulang nilainya ke operator (langkah 6), tempel ulang di kedua node HTTP, pastikan nama header persis `x-ingest-secret` |
-| Workflow tidak error tapi tidak ada notif / data tidak berubah ("mati diam-diam") | Workflow tidak aktif, atau error ter-swallow | Buka tab **Executions** di n8n → cek run terakhir dan errornya; pastikan toggle workflow **Active**; aktifkan notifikasi error (Error Trigger → node **Telegram** alarm bila tersedia di workflow Anda) |
+| Workflow tidak error tapi tidak ada notif / data tidak berubah ("mati diam-diam") | Workflow tidak aktif, atau error ter-swallow | Buka tab **Executions** di n8n → cek run terakhir dan errornya; pastikan toggle workflow **Active**; alarm error sudah terpasang: respons gagal ingest (`ok: false`) otomatis masuk ke node **Telegram Alarm**; error tak tertangani (crash node, timeout, error koneksi) diteruskan ke workflow **error-alarm** bila sudah dipasang sebagai Error Workflow (lihat baris di bawah). `unchanged` diam tanpa notif — itu by design, bukan error |
+| Pasang **error-alarm** sebagai Error Workflow (langkah manual, 3 klik, ±1 menit) | Tanpa ini, crash workflow tidak mengirim alarm | Di n8n buka workflow `email-status-ingest` → **Settings** (ikon ⚙️ di editor) → **Error Workflow** → pilih `error-alarm` → **Save**. Ulangi untuk workflow `daily-summary`. Verifikasi: picu error sengaja (mis. tempel secret salah → 401) dan pastikan pesan `🔥 ...` masuk Telegram |
 | Container n8n tidak jalan / `localhost:5678` tidak bisa dibuka | Docker Desktop belum running atau container stop | Buka Docker Desktop, tunggu engine running → `docker compose -f n8n/docker-compose.yml up -d` → cek `docker ps` → refresh browser |
 | Rekap pagi tidak masuk (workflow `daily-summary`) | Laptop mati jam 07:00, atau node **Schedule Trigger** / **HTTP Request Summary** / secret bermasalah | Pastikan laptop + Docker menyala sebelum 07:00 WIB; cek **Executions** workflow `daily-summary`; uji manual **Execute workflow** dan cocokkan angka dengan dashboard app; cek secret (baris 401 di atas) |

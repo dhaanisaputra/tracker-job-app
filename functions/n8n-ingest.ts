@@ -29,6 +29,12 @@ export default async function (req: Request): Promise<Response> {
     apiKey: Deno.env.get('API_KEY') ?? '',
   });
   const ownerId = Deno.env.get('OWNER_USER_ID') ?? '';
+  const baseUrl = Deno.env.get('INSFORGE_BASE_URL') ?? '';
+  const apiKey = Deno.env.get('API_KEY') ?? '';
+  if (!ownerId || !baseUrl || !apiKey) {
+    return json({ ok: false, error: 'server misconfigured' }, 500);
+  }
+  try {
   const url = new URL(req.url);
   const dryRun = url.searchParams.get('dry_run') === '1';
 
@@ -72,6 +78,28 @@ export default async function (req: Request): Promise<Response> {
   const body = await req.json().catch(() => ({}));
   const company = String(body.company ?? '').trim();
   const role = String(body.role ?? '').trim();
+  if (!company || !role) return json({ ok: false, error: 'company dan role wajib' }, 400);
+  // ponytail: explicit null status (unmapped portal status) → needs_review, no writes
+  if ('status' in body && (body.status === null || body.status === undefined)) {
+    let candidates: Array<{ id: string; company_name: string; role_title: string; current_status: string }> = [];
+    const jobUrlNull = String(body.job_url ?? '').trim();
+    let matchedId: string | null = null;
+    if (jobUrlNull) {
+      const { data } = await admin.database.from('job_applications')
+        .select('id, current_status').eq('user_id', ownerId).eq('job_url', jobUrlNull).limit(1);
+      if (data?.length) matchedId = data[0].id;
+    }
+    if (!matchedId) {
+      const first = normalize(company).split(' ')[0] ?? '';
+      const { data } = await admin.database.from('job_applications')
+        .select('id, company_name, role_title, current_status')
+        .eq('user_id', ownerId)
+        .ilike('company_name', `%${first}%`)
+        .limit(10);
+      candidates = (data ?? []).filter((r) => normalize(r.company_name) === normalize(company));
+    }
+    return json({ ok: true, action: 'needs_review', candidates, reason: 'status tak dikenal: ' + (body.portal_status ?? '') });
+  }
   const status = String(body.status ?? 'Applied').trim();
   const sourceName = String(body.source ?? '').trim();
   const jobUrl = String(body.job_url ?? '').trim();
@@ -102,7 +130,6 @@ export default async function (req: Request): Promise<Response> {
     const roleNorm = normalize(role);
     const roleHit = candidates.filter((r) => normalize(r.role_title).includes(roleNorm) || roleNorm.includes(normalize(r.role_title)));
     if (roleHit.length === 1) { appId = roleHit[0].id; prevStatus = roleHit[0].current_status; }
-    else if (candidates.length === 1 && !roleNorm) { appId = candidates[0].id; prevStatus = candidates[0].current_status; }
   }
   if (!appId && candidates.length > 0) {
     return json({ ok: true, action: 'needs_review', dry_run: dryRun || undefined, candidates });
@@ -126,7 +153,7 @@ export default async function (req: Request): Promise<Response> {
 
   if (appId) {
     if (prevStatus === status) return json({ ok: true, action: 'unchanged', application_id: appId });
-    await admin.database.from('job_applications').update({ current_status: status }).eq('id', appId);
+    await admin.database.from('job_applications').update({ current_status: status }).eq('id', appId).eq('user_id', ownerId);
     return json({ ok: true, action: 'updated', application_id: appId, prev_status: prevStatus });
   }
   const { data: inserted } = await admin.database.from('job_applications').insert([{
@@ -134,4 +161,7 @@ export default async function (req: Request): Promise<Response> {
     current_status: status, job_url: jobUrl || null, notes: notes || null,
   }]).select('id');
   return json({ ok: true, action: 'created', application_id: inserted?.[0]?.id ?? null });
+  } catch (err) {
+    return json({ ok: false, error: String((err as Error)?.message ?? err) }, 500);
+  }
 }

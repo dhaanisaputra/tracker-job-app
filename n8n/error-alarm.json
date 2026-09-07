@@ -1,0 +1,44 @@
+{
+  "id": "15e7b6c1-bf94-4539-88eb-8b348045b894",
+  "name": "error-alarm",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e8f1a2b3-0001-4000-8000-000000000001",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "",
+        "text": "=🔥 n8n error di workflow {{ $json.workflow.name }}: {{ $json.execution.error.message }}",
+        "additionalFields": {}
+      },
+      "id": "e8f1a2b3-0002-4000-8000-000000000002",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [460, 300]
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Jakarta"
+  }
+}
