@@ -1,0 +1,114 @@
+{
+  "id": "a8d7c7f2-d9c6-4bce-a55d-04a6333f0eda",
+  "name": "daily-summary",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cron",
+              "cronExpression": "0 7 * * *"
+            }
+          ]
+        },
+        "timezone": "Asia/Jakarta"
+      },
+      "id": "d5f1a2b3-0001-4000-8000-000000000001",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://5fr37au2.ap-southeast.insforge.app/functions/n8n-ingest?action=summary",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-ingest-secret",
+              "value": "__PASTE_SECRET_IN_UI__"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "d5f1a2b3-0002-4000-8000-000000000002",
+      "name": "HTTP Request Summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const input = $input.first().json || {};\nconst by_status = input.by_status || {};\nconst changed = input.changed_24h || [];\nconst upcoming = input.upcoming || [];\nconst parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'numeric' }).formatToParts(new Date());\nlet d = 1, m = 1;\nfor (const p of parts) { if (p.type === 'day') d = Number(p.value); if (p.type === 'month') m = Number(p.value); }\nconst months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];\nconst dateStr = d + ' ' + (months[m - 1] || '');\nconst order = ['Applied','Screening','HR Interview','Technical Interview','Offer','Accepted','Rejected','Withdrawn','Ghosted'];\nconst pairs = [];\nfor (const s of order) { const n = Number(by_status[s] || 0); if (n > 0) pairs.push(s + ' ' + n); }\nconst lines = [];\nlines.push('☀️ Rekap lamaran (' + dateStr + ')');\nlines.push(pairs.length ? 'Aktif: ' + pairs.join(' · ') : 'Belum ada lamaran tercatat.');\nif (changed.length) lines.push('Berubah 24 jam: ' + changed.map((c) => (c.company_name || '') + ' – ' + (c.role_title || '') + ' → ' + (c.status || '')).join('; '));\nif (upcoming.length) lines.push('Deadline dekat: ' + upcoming.map((u) => (u.company_name || '') + ' – ' + (u.role_title || '') + ' (' + (u.kind || '') + ': ' + (u.date || '') + ')').join('; '));\nreturn [{ json: { message: lines.join('\\n') } }];"
+      },
+      "id": "d5f1a2b3-0003-4000-8000-000000000003",
+      "name": "Code Format",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "",
+        "text": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "id": "d5f1a2b3-0004-4000-8000-000000000004",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request Summary": {
+      "main": [
+        [
+          {
+            "node": "Code Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Format": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Jakarta"
+  }
+}
