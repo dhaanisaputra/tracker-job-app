@@ -115,3 +115,68 @@ Nilai secret tidak tertulis di runbook ini. Caranya:
 | Pasang **error-alarm** sebagai Error Workflow (langkah manual, 3 klik, ±1 menit) | Tanpa ini, crash workflow tidak mengirim alarm | Di n8n buka workflow `email-status-ingest` → **Settings** (ikon ⚙️ di editor) → **Error Workflow** → pilih `error-alarm` → **Save**. Ulangi untuk workflow `daily-summary`. Verifikasi: picu error sengaja (mis. tempel secret salah → 401) dan pastikan pesan `🔥 ...` masuk Telegram |
 | Container n8n tidak jalan / `localhost:5678` tidak bisa dibuka | Docker Desktop belum running atau container stop | Buka Docker Desktop, tunggu engine running → `docker compose -f n8n/docker-compose.yml up -d` → cek `docker ps` → refresh browser |
 | Rekap pagi tidak masuk (workflow `daily-summary`) | Laptop mati jam 07:00, atau node **Schedule Trigger** / **HTTP Request Summary** / secret bermasalah | Pastikan laptop + Docker menyala sebelum 07:00 WIB; cek **Executions** workflow `daily-summary`; uji manual **Execute workflow** dan cocokkan angka dengan dashboard app; cek secret (baris 401 di atas) |
+
+---
+
+## Fase 2 — Capture saat apply
+
+Tiga workflow fase 2 (di repo, semua **Inactive** sampai publish): `parse-job-url` (sub-workflow: fetch halaman → LLM ekstrak → Ingest), `apply-bookmarklet` (webhook `POST /webhook/apply` → sub-workflow → Telegram), `apply-telegram` (bot Telegram → URL via sub-workflow, atau format manual `Perusahaan | Role` via Ingest langsung → Telegram). Tanpa nilai secret/key/token di dokumen ini — hanya cara mendapatkannya.
+
+### A. Install bookmarklet (browser desktop, ±2 menit)
+
+1. Buat bookmark baru di browser (bookmark bar terlihat). Isi URL bookmark = **persis isi file `n8n/bookmarklet.js`** (buka file, salin seluruh satu baris yang diawali `javascript:...`).
+2. Cara pakai: buka halaman lowongan → klik bookmark → bookmark POST `{url, title, text}` ke `http://localhost:5678/webhook/apply` → muncul `alert` berisi ringkasan respons (`Lamaranku: ...`).
+3. Syarat: n8n jalan (`docker compose -f n8n/docker-compose.yml up -d`) dan workflow `apply-bookmarklet` sudah **Active**. Kalau `alert` gagal / koneksi ditolak → n8n mati atau workflow belum Active (lihat troubleshooting di bawah).
+
+### B. Telegram mobile (kirim URL atau manual)
+
+1. Bot Telegram + chat ID sama seperti §4 (attach kredensial Telegram ke semua node Telegram di `apply-bookmarklet` dan `apply-telegram` — chatId kosong di JSON repo, wajib diisi di UI, jangan commit nilainya).
+2. Kirim ke bot: **URL lowongan** (otomatis fetch + ekstrak) atau format manual **`Perusahaan | Role`** (contoh: `Acme Corp | Frontend Engineer`).
+3. Respons bot: `➕ Baru: *Perusahaan - Role*` (created), `⚠️ Perlu cek manual: ...` (review), `Format: Perusahaan | Role` (manual tidak valid), `🔥 Capture gagal: ...` (ingest gagal).
+
+### C. Uji live 1x (WAJIB hijau sebelum produksi tanpa dry_run)
+
+> Baseline saat penulisan: `SELECT COUNT(*) FROM job_applications` = **56** (tanggal 2026-09-08). Ukur ulang baseline Anda sebelum uji — jangan percaya angka ini.
+
+```powershell
+# 1. Baseline
+npx -y @insforge/cli db query "SELECT COUNT(*) FROM job_applications" --json
+# 2. Live create via bookmarklet path (workflow apply-bookmarklet harus Active; TANPA dry_run di URL Ingest)
+Invoke-WebRequest -Method POST -Uri "http://localhost:5678/webhook/apply" -ContentType "application/json" -Body '{"url":"https://example.com/lowongan-nyata-anda","title":"Judul Lowongan","text":"Teks lowongan nyata yang memuat nama perusahaan dan role"}' -UseBasicParsing
+# Harapan: {ok:true, action:'created', application_id:'<uuid>'} (TANPA flag dry_run!) + Telegram "➕ Baru"
+# 3. Verifikasi: baris ada + tepat 1 history Applied + source ter-resolve
+npx -y @insforge/cli db query "SELECT * FROM job_applications WHERE id='<uuid>'" --json
+npx -y @insforge/cli db query "SELECT * FROM application_status_history WHERE application_id='<uuid>'" --json
+# 4. Cleanup WAJIB: hapus baris test, COUNT harus kembali ke baseline, history 0
+npx -y @insforge/cli db query "DELETE FROM job_applications WHERE id='<uuid>'" --json
+npx -y @insforge/cli db query "SELECT COUNT(*) FROM job_applications" --json
+npx -y @insforge/cli db query "SELECT COUNT(*) FROM application_status_history WHERE application_id='<uuid>'" --json
+# (+ hapus baris job_sources HANYA bila dibuat oleh test ini DAN tidak dipakai baris lain)
+```
+
+Varian Telegram manual (workflow `apply-telegram` Active + kredensial bot terpasang): kirim `Perusahaan Test Live | Role Test Live` ke bot → harapan sama seperti di atas → cleanup dengan SQL yang sama.
+
+### D. Publish 3 workflow (UI, ±5 menit)
+
+1. **Lepas dry_run DULU** (HANYA setelah uji §C hijau — produksi tanpa dry_run hanya setelah test hijau): di UI n8n, hapus `?dry_run=1` dari URL di **dua** node: `parse-job-url` → **HTTP Request Ingest**, dan `apply-telegram` → **HTTP Request IngestDirect**. (File repo masih `dry_run=ON` — disengaja sebagai default aman. Setelah publish sukses, ekspor ulang JSON dari UI dan commit agar file = produksi.)
+2. **Pasang kredensial**: Telegram (semua node Telegram di `apply-bookmarklet` + `apply-telegram`, lihat §4), LLM/Gemini (node **Information Extractor ParseJob** di `parse-job-url`, lihat §5), header `x-ingest-secret` (kedua node HTTP di atas + workflow fase 1, lihat §6).
+3. **Aktifkan**: toggle **Active** untuk `parse-job-url` (diekspos sebagai sub-workflow), `apply-bookmarklet`, `apply-telegram`. Versi UI: beri catatan `v1 - capture produksi` bila n8n meminta nama/versi saat publish.
+4. **Pasang error-alarm**: di tiap workflow fase 2 → **Settings** (⚙️) → **Error Workflow** → pilih `error-alarm` → **Save** (cara sama seperti §9).
+5. Verifikasi akhir: ulangi §C sekali lagi dalam keadaan produksi → hijau + cleanup → COUNT = baseline.
+
+### E. Operasional
+
+- **Laptop menyala + Docker running** adalah syarat (webhook `localhost`, polling Telegram Trigger, dan LLM call semua lewat n8n lokal). Laptop mati = capture berhenti; kiriman Telegram saat mati diproses saat n8n hidup lagi (dalam batas retensi update Telegram).
+- Jangan commit nilai secret/token/chatId — placeholder `__PASTE_SECRET_IN_UI__` dan `chatId` kosong harus tetap begitu di repo.
+
+### F. Troubleshooting fase 2
+
+| Gejala | Penyebab umum | Cara perbaiki |
+|---|---|---|
+| `alert` bookmarklet gagal / koneksi ditolak | n8n mati, atau workflow `apply-bookmarklet` Inactive | `docker compose -f n8n/docker-compose.yml up -d` → cek `docker ps` → toggle workflow **Active** → coba lagi |
+| Webhook balas `404` | Workflow belum **Active** (webhook hanya terdaftar saat aktif) | Aktifkan workflow di UI (§D.3) |
+| Bot tidak merespons | Kredensial Telegram belum dipasang / workflow Inactive | Attach kredensial + isi chatId (§B.1), aktifkan workflow, tes **Execute step** pada node Telegram |
+| Fetch gagal / `tidak bisa baca halaman` | Situs blokir bot / butuh JS / URL salah | Pakai format manual `Perusahaan \| Role` sebagai fallback |
+| Duplikat lamaran | `job_url` sudah tercatat | Cek `job_url` di app — duplikat ditolak by design; pakai URL unik untuk uji |
+| Edge balas `401 unauthorized` | Header `x-ingest-secret` salah / belum ditempel | Tempel ulang secret (lihat §6), pastikan nama header persis `x-ingest-secret` |
+| Respons `dry_run` padahal mau produksi | Lupa lepas `?dry_run=1` di satu dari dua node | Cek kedua URL (§D.1): Ingest di `parse-job-url` DAN IngestDirect di `apply-telegram` |
