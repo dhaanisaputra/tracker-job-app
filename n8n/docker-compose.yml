@@ -8,7 +8,7 @@ services:
       - N8N_HOST=localhost
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
-      - WEBHOOK_URL=http://localhost:5678/
+      - WEBHOOK_URL=https://laptop-ht8inhl0.tail9643fd.ts.net/
       - GENERIC_TIMEZONE=Asia/Jakarta
     volumes:
       - n8n_data:/home/node/.n8n
