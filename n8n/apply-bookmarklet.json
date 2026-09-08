@@ -225,7 +225,7 @@
       "mode": "manual",
       "name": "Code UnwrapBody",
       "parameters": {
-        "jsCode": "const b = .first().json ?? {}; const body = (b && typeof b === 'object' && b.body && typeof b.body === 'object') ? b.body : b; return [{ json: body }];",
+        "jsCode": "const b = $input.first().json ?? {}; const body = (b && typeof b === 'object' && b.body && typeof b.body === 'object') ? b.body : b; return [{ json: body }];",
         "mode": "runOnceForAllItems"
       },
       "position": [
