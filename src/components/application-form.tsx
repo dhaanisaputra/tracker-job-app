@@ -9,6 +9,8 @@ import type { JobApplication, Source } from '@/lib/types'
 import { Modal } from '@/components/modal'
 import { toast } from '@/components/toast'
 import { Dropdown } from '@/components/dropdown'
+import { useLang } from '@/components/language-provider'
+import { dateLocale } from '@/lib/i18n'
 
 type Props = {
   sources: Source[]
@@ -45,6 +47,7 @@ function AutosizeTextarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElemen
 
 export function ApplicationForm({ sources, initial }: Props) {
   const router = useRouter()
+  const { t, lang } = useLang()
   const isEdit = Boolean(initial)
   const [submitting, setSubmitting] = useState(false)
   const [duplicates, setDuplicates] = useState<Duplicate[]>([])
@@ -82,12 +85,12 @@ export function ApplicationForm({ sources, initial }: Props) {
 
     if (jobUrlError) {
       setSubmitting(false)
-      setError('Link lowongan tidak sesuai format URL')
+      setError(t('form.urlError'))
       return
     }
     if (mandatoryMissing) {
       setSubmitting(false)
-      setError('Tipe pekerjaan dan Posisi Kerja wajib diisi')
+      setError(t('form.mandatoryError'))
       return
     }
 
@@ -130,7 +133,7 @@ export function ApplicationForm({ sources, initial }: Props) {
       setError(result.message)
       return
     }
-    toast(isEdit ? 'Perubahan tersimpan' : 'Lamaran tersimpan')
+    toast(isEdit ? t('form.toastSaved') : t('form.toastCreated'))
     router.push('/dashboard')
     router.refresh()
   }
@@ -145,36 +148,36 @@ export function ApplicationForm({ sources, initial }: Props) {
         <div className="rounded-xl border border-trailblaze/40 bg-trailblaze/10 p-3">
           <p className="flex items-center gap-2 text-sm font-semibold text-ink">
             <AlertTriangle size={16} className="text-trailblaze" />
-            Mungkin kamu sudah pernah apply di sini:
+            {t('form.dupTitle')}
           </p>
           <ul className="mt-2 space-y-1 text-sm text-ink">
             {duplicates.map((d) => (
               <li key={d.id}>
                 <span className="font-medium">{d.company_name}</span> - {d.role_title} (
-                {new Date(d.applied_date).toLocaleDateString('id-ID', {
+                {new Date(d.applied_date).toLocaleDateString(dateLocale(lang), {
                   day: 'numeric',
                   month: 'short',
                   year: 'numeric',
                 })}
-                , status: {d.current_status})
+                , {t('form.dupStatus')}{d.current_status})
               </li>
             ))}
           </ul>
-          <p className="mt-1 text-xs text-stone">Tetap lanjut tambah lamaran baru?</p>
+          <p className="mt-1 text-xs text-stone">{t('form.dupAsk')}</p>
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block sm:col-span-2">
-          <span className={labelCls}>Perusahaan <span className="text-ember">*</span></span>
+          <span className={labelCls}>{t('form.company')} <span className="text-ember">*</span></span>
           <input id="company_name" name="company_name" required defaultValue={initial?.company_name} className={inputCls} />
         </label>
         <label className="block sm:col-span-2">
-          <span className={labelCls}>Role / Posisi <span className="text-ember">*</span></span>
+          <span className={labelCls}>{t('form.role')} <span className="text-ember">*</span></span>
           <input name="role_title" required defaultValue={initial?.role_title} className={inputCls} />
         </label>
         <label className="block sm:col-span-2">
-          <span className={labelCls}>Sumber lamaran <span className="text-ember">*</span></span>
+          <span className={labelCls}>{t('form.source')} <span className="text-ember">*</span></span>
           <Dropdown
             value={sourceId}
             options={sources.map((s) => ({ value: s.id, label: s.name }))}
@@ -182,7 +185,7 @@ export function ApplicationForm({ sources, initial }: Props) {
           />
         </label>
         <label className="block sm:col-span-2">
-          <span className={labelCls}>Link lowongan</span>
+          <span className={labelCls}>{t('form.jobUrl')}</span>
           <input
             type="text"
             name="job_url"
@@ -192,53 +195,51 @@ export function ApplicationForm({ sources, initial }: Props) {
             placeholder="https://..."
           />
           {jobUrlError && (
-            <span className="mt-1 block text-xs text-ember">Teks tidak sesuai format link.</span>
+            <span className="mt-1 block text-xs text-ember">{t('form.urlHint')}</span>
           )}
         </label>
         <label className="block sm:col-span-2">
-          <span className={labelCls}>Deskripsi pekerjaan</span>
-          <AutosizeTextarea name="job_description" defaultValue={initial?.job_description ?? ''} placeholder="Tempel deskripsi pekerjaan di sini..." />
+          <span className={labelCls}>{t('form.jobDesc')}</span>
+          <AutosizeTextarea name="job_description" defaultValue={initial?.job_description ?? ''} placeholder={t('form.jobDescPh')} />
         </label>
         <label className="block">
-          <span className={labelCls}>Lokasi</span>
+          <span className={labelCls}>{t('form.location')}</span>
           <input name="location" defaultValue={initial?.location ?? ''} className={inputCls} />
         </label>
         <label className="block">
-          <span className={labelCls}>Tipe pekerjaan <span className="text-ember">*</span></span>
+          <span className={labelCls}>{t('form.empType')} <span className="text-ember">*</span></span>
           <Dropdown
             value={employmentType}
             options={EMPLOYMENT_TYPES.map((t) => ({ value: t, label: t }))}
             onChange={setEmploymentType}
-            placeholder="Pilih"
           />
           {employmentType === '' && (
-            <span className="mt-1 block text-xs text-ember">Tipe pekerjaan wajib diisi.</span>
+            <span className="mt-1 block text-xs text-ember">{t('form.typeRequired')}</span>
           )}
         </label>
         <label className="block">
-          <span className={labelCls}>Posisi Kerja <span className="text-ember">*</span></span>
+          <span className={labelCls}>{t('form.arrangement')} <span className="text-ember">*</span></span>
           <Dropdown
             value={workArrangement}
             options={WORK_ARRANGEMENTS.map((t) => ({ value: t, label: t }))}
             onChange={setWorkArrangement}
-            placeholder="Pilih"
           />
           {workArrangement === '' && (
-            <span className="mt-1 block text-xs text-ember">Posisi Kerja wajib diisi.</span>
+            <span className="mt-1 block text-xs text-ember">{t('form.arrRequired')}</span>
           )}
         </label>
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
-            <span className={labelCls}>Gaji min (Rp)</span>
+            <span className={labelCls}>{t('form.salaryMin')}</span>
             <input type="number" min="0" name="salary_min" defaultValue={initial?.salary_min ?? ''} className={inputCls} />
           </label>
           <label className="block">
-            <span className={labelCls}>Gaji max (Rp)</span>
+            <span className={labelCls}>{t('form.salaryMax')}</span>
             <input type="number" min="0" name="salary_max" defaultValue={initial?.salary_max ?? ''} className={inputCls} />
           </label>
         </div>
         <label className="block">
-          <span className={labelCls}>Tanggal apply <span className="text-ember">*</span></span>
+          <span className={labelCls}>{t('form.appliedDate')} <span className="text-ember">*</span></span>
           <input
             type="date"
             name="applied_date"
@@ -248,29 +249,29 @@ export function ApplicationForm({ sources, initial }: Props) {
           />
         </label>
         <label className="block">
-          <span className={labelCls}>Status saat ini <span className="text-ember">*</span></span>
+          <span className={labelCls}>{t('form.statusNow')} <span className="text-ember">*</span></span>
           <Dropdown
             value={status}
             options={STATUSES.map((s) => ({ value: s, label: s }))}
             onChange={setStatus}
-            placeholder="Pilih status"
+            placeholder={t('form.statusPh')}
           />
         </label>
         <label className="block sm:col-span-2">
-          <span className={labelCls}>Nama rekruter</span>
-          <input name="contact_person" defaultValue={initial?.contact_person ?? ''} className={inputCls} placeholder="Nama recruiter/HR" />
+          <span className={labelCls}>{t('form.recruiter')}</span>
+          <input name="contact_person" defaultValue={initial?.contact_person ?? ''} className={inputCls} placeholder={t('form.recruiterPh')} />
         </label>
         <label className="block sm:col-span-2">
-          <span className={labelCls}>Catatan</span>
+          <span className={labelCls}>{t('form.notes')}</span>
           <AutosizeTextarea name="notes" defaultValue={initial?.notes ?? ''} />
         </label>
         <label className="block">
-          <span className={labelCls}>Follow-up berikutnya</span>
+          <span className={labelCls}>{t('form.followup')}</span>
           <input type="date" name="next_follow_up_date" defaultValue={initial?.next_follow_up_date ?? ''} className={inputCls} />
         </label>
         {showInterview && (
           <label className="block">
-            <span className={labelCls}>Jadwal interview</span>
+            <span className={labelCls}>{t('form.interviewAt')}</span>
             <input
               type="datetime-local"
               name="interview_scheduled_at"
@@ -281,7 +282,7 @@ export function ApplicationForm({ sources, initial }: Props) {
         )}
         {showTaskDeadline && (
           <label className="block">
-            <span className={labelCls}>Deadline task</span>
+            <span className={labelCls}>{t('form.taskDeadline')}</span>
             <input
               type="datetime-local"
               name="task_deadline"
@@ -289,18 +290,18 @@ export function ApplicationForm({ sources, initial }: Props) {
               className={inputCls}
             />
             <span className="mt-1 block text-xs text-stone">
-              Misal deadline assignment/coding test.
+              {t('form.taskHint')}
             </span>
           </label>
         )}
         {showOffer && (
           <>
             <label className="block">
-              <span className={labelCls}>Nominal offer</span>
+              <span className={labelCls}>{t('form.offerAmount')}</span>
               <input type="number" name="offer_salary" defaultValue={initial?.offer_salary ?? ''} className={inputCls} />
             </label>
             <label className="block">
-              <span className={labelCls}>Deadline keputusan</span>
+              <span className={labelCls}>{t('form.offerDeadline')}</span>
               <input type="date" name="offer_deadline" defaultValue={initial?.offer_deadline ?? ''} className={inputCls} />
             </label>
           </>
@@ -312,10 +313,10 @@ export function ApplicationForm({ sources, initial }: Props) {
         disabled={submitting}
         className="btn-primary w-full"
       >
-        {submitting ? 'Menyimpan...' : isEdit ? 'Simpan perubahan' : 'Tambah lamaran'}
+        {submitting ? t('form.submitting') : isEdit ? t('form.saveEdit') : t('form.addNew')}
       </button>
 
-      <Modal open={!!error} onClose={() => setError('')} title="Gagal menyimpan">
+      <Modal open={!!error} onClose={() => setError('')} title={t('form.saveFail')}>
         <p className="text-sm text-ember">{error}</p>
         <div className="mt-5 flex justify-end">
           <button
@@ -323,7 +324,7 @@ export function ApplicationForm({ sources, initial }: Props) {
             onClick={() => setError('')}
             className="btn-primary"
           >
-            Tutup
+            {t('common.close')}
           </button>
         </div>
       </Modal>

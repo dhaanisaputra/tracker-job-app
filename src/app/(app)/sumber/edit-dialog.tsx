@@ -3,10 +3,12 @@
 import { Modal } from '@/components/modal'
 import { updateSource } from './actions'
 import type { Source } from '@/lib/types'
+import { useLang } from '@/components/language-provider'
 
 export function EditSourceDialog({ source, open, onClose }: { source: Source | null; open: boolean; onClose: () => void }) {
+  const { t } = useLang()
   return (
-    <Modal open={open} onClose={onClose} title="Edit sumber">
+    <Modal open={open} onClose={onClose} title={t('sumber.editTitle')}>
       <form
         action={updateSource}
         onSubmit={onClose}
@@ -17,10 +19,10 @@ export function EditSourceDialog({ source, open, onClose }: { source: Source | n
           name="name"
           defaultValue={source?.name}
           required
-          placeholder="Nama sumber"
+          placeholder={t('sumber.namePh')}
           className="field flex-1"
         />
-        <button type="submit" className="btn-primary">Simpan</button>
+        <button type="submit" className="btn-primary">{t('common.save')}</button>
       </form>
     </Modal>
   )

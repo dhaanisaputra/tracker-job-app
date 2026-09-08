@@ -6,6 +6,7 @@ import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler,
 } from 'chart.js'
 import { Card } from '@/components/card'
+import { useLang } from '@/components/language-provider'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler)
 
@@ -29,18 +30,19 @@ function hexToRgba(hex: string, alpha: number) {
 }
 
 export function MomentumChart({ labels, values }: { labels: string[]; values: number[] }) {
+  const { t } = useLang()
   const line = useCssVar('--line', '#e3e7ee')
   const stone = useCssVar('--stone', '#5b6478')
   const grid = hexToRgba(line, 0.5)
 
   return (
-    <Card title="Tren Lamaran" subtitle="Jumlah lamaran per periode.">
+    <Card title={t('stats.trend')} subtitle={t('stats.trendSub')}>
       <div className="h-64">
         <Line
           data={{
             labels,
             datasets: [{
-              label: 'Lamaran',
+              label: t('stats.dataset'),
               data: values,
               borderColor: '#3a5cd9',
               backgroundColor: 'rgba(58,92,217,0.12)',

@@ -1,12 +1,17 @@
+'use client'
+
+import { useLang } from '@/components/language-provider'
+
 const dotColors = ['#3a5cd9', '#19916c', '#2f7fa8', '#d04444', '#d99a2b', '#5b6478']
 
 export function SourceList({ items }: { items: { name: string; value: number }[] }) {
+  const { t } = useLang()
   const total = items.reduce((acc, i) => acc + i.value, 0)
   return (
     <section className="card p-4">
-      <h2 className="text-sm font-semibold text-ink">Asal Sumber</h2>
+      <h2 className="text-sm font-semibold text-ink">{t('stats.sources')}</h2>
       {items.length === 0 ? (
-        <p className="mt-4 text-sm text-stone">Belum ada data sumber.</p>
+        <p className="mt-4 text-sm text-stone">{t('stats.noSources')}</p>
       ) : (
         <ul className="mt-4 flex flex-col gap-3">
           {items.map((item, i) => (

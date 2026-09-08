@@ -3,8 +3,10 @@
 import { useActionState } from 'react'
 import { sendOtp } from '@/app/auth-actions'
 import { BrandMark } from '@/components/brand-mark'
+import { useLang } from '@/components/language-provider'
 
 export default function SignInPage() {
+  const { t } = useLang()
   const [state, action, pending] = useActionState(sendOtp, undefined)
 
   return (
@@ -14,9 +16,9 @@ export default function SignInPage() {
           <BrandMark size={22} />
           <span className="bg-gradient-to-r from-[#3a5cd9] to-[#2f7fa8] bg-clip-text text-sm font-semibold text-transparent">Lamaranku</span>
         </div>
-        <h1 className="font-display text-2xl font-bold text-ink mb-1">Masuk untuk melacak lamaran</h1>
+        <h1 className="font-display text-2xl font-bold text-ink mb-1">{t('auth.signinTitle')}</h1>
         <p className="text-sm text-stone mb-8">
-          Masukkan email kamu, kami kirim kode masuk sekali pakai.
+          {t('auth.signinDesc')}
         </p>
 
         <form action={action} className="space-y-4">
@@ -28,7 +30,7 @@ export default function SignInPage() {
               required
               autoComplete="email"
               className="field"
-              placeholder="kamu@contoh.com"
+              placeholder={t('auth.emailPh')}
             />
           </label>
 
@@ -39,7 +41,7 @@ export default function SignInPage() {
             disabled={pending}
             className="btn-primary w-full"
           >
-            {pending ? 'Mengirim...' : 'Kirim kode masuk'}
+            {pending ? t('auth.sending') : t('auth.sendCode')}
           </button>
         </form>
       </div>

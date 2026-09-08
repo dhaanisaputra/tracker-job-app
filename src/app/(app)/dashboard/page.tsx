@@ -9,6 +9,9 @@ import { StatCard } from '@/components/stat-card'
 import { StreakTrail } from '@/components/streak-trail'
 import { LamaranList } from '@/components/lamaran-list'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { LanguageToggle } from '@/components/language-toggle'
+import { getServerLang } from '@/lib/server-lang'
+import { getDict } from '@/lib/i18n'
 import type { ApplicationWithSource } from '@/lib/types'
 
 export default async function DashboardPage() {
@@ -36,22 +39,24 @@ export default async function DashboardPage() {
   ).length
   const followup = (followRes.count ?? 0) + (interviewRes.count ?? 0) + pendingTasks
   const recent = (recentRes.data ?? []) as ApplicationWithSource[]
+  const t = getDict(await getServerLang())
 
   return (
     <main className="p-4">
-      <PageHeader title="Lamaranku" description="Ringkasan aktivitas melamar kamu.">
+      <PageHeader title="Lamaranku" description={t['dashboard.desc']}>
         <Link href="/lamaran/import" className="btn-secondary">
-          <FileUp size={16} /> Impor
+          <FileUp size={16} /> {t['dashboard.import']}
         </Link>
         <Link href="/lamaran/baru" className="btn-primary">
-          <Plus size={16} /> Tambah
+          <Plus size={16} /> {t['dashboard.add']}
         </Link>
         <ThemeToggle />
+        <LanguageToggle />
       </PageHeader>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <StatCard label="Total Lamaran" value={String(total)} icon={<Send size={20} />} tone="primary" progress={Math.min(100, total)} />
-        <StatCard label="Perlu Tindakan" value={String(followup)} icon={<Bell size={20} />} tone="denim" progress={Math.min(100, followup * 10)} />
+        <StatCard label={t['dashboard.total']} value={String(total)} icon={<Send size={20} />} tone="primary" progress={Math.min(100, total)} />
+        <StatCard label={t['dashboard.needsAction']} value={String(followup)} icon={<Bell size={20} />} tone="denim" progress={Math.min(100, followup * 10)} />
       </section>
 
       <div className="mt-4">

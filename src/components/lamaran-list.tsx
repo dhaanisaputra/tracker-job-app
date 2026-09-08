@@ -13,6 +13,8 @@ import { ConfirmDialog } from '@/components/confirm-dialog'
 import { toast } from '@/components/toast'
 import { TaskBadge } from '@/components/task-badge'
 import { Dropdown } from '@/components/dropdown'
+import { useLang } from '@/components/language-provider'
+import { dateLocale, type Key, type Lang } from '@/lib/i18n'
 
 const PAGE_SIZE = 15
 
@@ -29,18 +31,19 @@ type Props =
   | { variant: 'compact'; sources: Source[]; initialItems: ApplicationWithSource[] }
 
 export function LamaranList(props: Props) {
+  const { t, lang } = useLang()
   if (props.variant === 'compact') {
     const { initialItems } = props
     return (
       <div className="card">
         <div className="flex items-center justify-between border-b border-line px-4 py-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-stone">Aktivitas Terbaru</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-stone">{t('dashboard.recent')}</h2>
           <Link href="/lamaran" className="text-sm font-medium text-trailblaze hover:underline">
-            Lihat semua
+            {t('dashboard.viewAll')}
           </Link>
         </div>
         {initialItems.length === 0 ? (
-          <p className="p-6 text-center text-sm text-stone">Belum ada lamaran.</p>
+          <p className="p-6 text-center text-sm text-stone">{t('dashboard.emptyRecent')}</p>
         ) : (
           <ul className="divide-y divide-line">
             {initialItems.map((app) => (
@@ -54,7 +57,7 @@ export function LamaranList(props: Props) {
                     <StatusBadge status={app.current_status} />
                     <TaskBadge currentStatus={app.current_status} deadline={app.task_deadline} />
                     <span className="text-label-xs text-stone">
-                      {new Date(app.applied_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                      {new Date(app.applied_date).toLocaleDateString(dateLocale(lang), { day: '2-digit', month: 'short' })}
                     </span>
                   </div>
                 </Link>
@@ -67,10 +70,10 @@ export function LamaranList(props: Props) {
   }
 
   const { sources } = props
-  return <FullList sources={sources} />
+  return <FullList sources={sources} t={t} lang={lang} />
 }
 
-function FullList({ sources }: { sources: Source[] }) {
+function FullList({ sources, t, lang }: { sources: Source[]; t: (k: Key) => string; lang: Lang }) {
   const [search, setSearch] = useState('')
   const [debounced, setDebounced] = useState('')
   const [status, setStatus] = useState('')
@@ -146,7 +149,7 @@ function FullList({ sources }: { sources: Source[] }) {
     const n = selected.size
     setSelected(new Set())
     setPage(0)
-    toast(`${n} lamaran dihapus`)
+    toast(t('lamaran.toastDeleted').replace('{n}', String(n)))
     refetch()
   }
 
@@ -155,7 +158,7 @@ function FullList({ sources }: { sources: Source[] }) {
     if (selected.size === 0) return
     await insforge.database.from('job_applications').update({ current_status: s }).in('id', [...selected])
     setSelected(new Set())
-    toast('Status diperbarui')
+    toast(t('lamaran.toastStatus'))
     refetch()
   }
 
@@ -167,7 +170,7 @@ function FullList({ sources }: { sources: Source[] }) {
           <input
             value={search}
             onChange={(e) => onSearch(e.target.value)}
-            placeholder="Cari perusahaan / role..."
+            placeholder={t('lamaran.searchPh')}
             className="field py-2 pl-9 pr-3"
           />
         </div>
@@ -175,17 +178,17 @@ function FullList({ sources }: { sources: Source[] }) {
           <div className="sm:w-56">
             <Dropdown
               value={status}
-              options={[{ value: '', label: 'Status' }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
+              options={[{ value: '', label: t('lamaran.statusAll') }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
               onChange={(v) => { setStatus(v); setPage(0) }}
-              placeholder="Status"
+              placeholder={t('lamaran.statusAll')}
             />
           </div>
           <div className="sm:w-56">
             <Dropdown
               value={source}
-              options={[{ value: '', label: 'Sumber' }, ...sources.map((s) => ({ value: s.id, label: s.name }))]}
+              options={[{ value: '', label: t('lamaran.sourceAll') }, ...sources.map((s) => ({ value: s.id, label: s.name }))]}
               onChange={(v) => { setSource(v); setPage(0) }}
-              placeholder="Sumber"
+              placeholder={t('lamaran.sourceAll')}
             />
           </div>
           <button
@@ -195,21 +198,21 @@ function FullList({ sources }: { sources: Source[] }) {
             className="col-span-2 inline-flex items-center justify-center gap-1.5 rounded-md border border-line px-3 py-2 text-sm font-medium text-stone transition-colors hover:border-ember/40 hover:text-ember disabled:cursor-not-allowed disabled:opacity-40 sm:mt-0"
           >
             <RotateCcw size={14} />
-            Reset
+            {t('common.reset')}
           </button>
         </div>
       </div>
 
       {selected.size > 0 && (
         <div className="flex flex-wrap items-center gap-2 rounded-md bg-denim/10 p-2 text-sm">
-          <span className="px-1 text-sm font-medium text-denim">{selected.size} dipilih</span>
-          <button onClick={() => setConfirmBulk(true)} className="inline-flex items-center gap-1 rounded-md bg-ember px-2.5 py-1.5 text-xs font-semibold text-white hover:opacity-90"><Trash2 size={14} /> Hapus</button>
+          <span className="px-1 text-sm font-medium text-denim">{t('lamaran.selected').replace('{n}', String(selected.size))}</span>
+          <button onClick={() => setConfirmBulk(true)} className="inline-flex items-center gap-1 rounded-md bg-ember px-2.5 py-1.5 text-xs font-semibold text-white hover:opacity-90"><Trash2 size={14} /> {t('lamaran.bulkDelete')}</button>
           <div className="w-full sm:w-auto">
             <Dropdown
               value=""
-              options={[{ value: '', label: 'Ubah status...' }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
+              options={[{ value: '', label: t('lamaran.changeStatus') }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
               onChange={(v) => v && bulkStatus(v)}
-              placeholder="Ubah status..."
+              placeholder={t('lamaran.changeStatus')}
               panelWidth={240}
             />
           </div>
@@ -220,10 +223,10 @@ function FullList({ sources }: { sources: Source[] }) {
         <div className="flex justify-center py-10 text-stone"><Loader2 className="animate-spin" /></div>
       ) : items.length === 0 ? (
         <div className="card p-8 text-center">
-          <p className="text-base font-semibold text-ink">Belum ada lamaran</p>
-          <p className="mt-1 text-sm text-stone">Mulai catat lamaran pertamamu, atau ubah pencarian.</p>
+          <p className="text-base font-semibold text-ink">{t('lamaran.empty')}</p>
+          <p className="mt-1 text-sm text-stone">{t('lamaran.emptyHint')}</p>
           <Link href="/lamaran/baru" className="btn-primary mt-4 inline-flex">
-            Tambah lamaran
+            {t('lamaran.addFirst')}
           </Link>
         </div>
       ) : (
@@ -242,10 +245,10 @@ function FullList({ sources }: { sources: Source[] }) {
                     <StatusBadge status={app.current_status} />
                     <TaskBadge currentStatus={app.current_status} deadline={app.task_deadline} />
                     <span>{app.sources?.name}</span>
-                    <span>{new Date(app.applied_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</span>
+                    <span>{new Date(app.applied_date).toLocaleDateString(dateLocale(lang), { day: '2-digit', month: 'short' })}</span>
                   </div>
                 </Link>
-                <RowActions appId={app.id} open={openMenu === app.id} onToggle={() => setOpenMenu(openMenu === app.id ? null : app.id)} />
+                      <RowActions appId={app.id} open={openMenu === app.id} onToggle={() => setOpenMenu(openMenu === app.id ? null : app.id)} t={t} lang={lang} />
               </li>
             ))}
           </ul>
@@ -256,11 +259,11 @@ function FullList({ sources }: { sources: Source[] }) {
               <thead>
                 <tr className="border-b border-line bg-surface-muted text-left text-label-xs uppercase tracking-wider text-stone">
                   <th className="p-3 font-semibold" />
-                  <SortHeader label="Perusahaan" sortKey="company_name" sort={sort} onSort={toggleSort} />
-                  <SortHeader label="Role" sortKey="role_title" sort={sort} onSort={toggleSort} />
-                  <SortHeader label="Sumber" sortKey="sources(name)" sort={sort} onSort={toggleSort} />
-                  <SortHeader label="Tanggal" sortKey="applied_date" sort={sort} onSort={toggleSort} />
-                  <SortHeader label="Status" sortKey="current_status" sort={sort} onSort={toggleSort} />
+                  <SortHeader label={t('lamaran.colCompany')} sortKey="company_name" sort={sort} onSort={toggleSort} />
+                  <SortHeader label={t('lamaran.colRole')} sortKey="role_title" sort={sort} onSort={toggleSort} />
+                  <SortHeader label={t('lamaran.colSource')} sortKey="sources(name)" sort={sort} onSort={toggleSort} />
+                  <SortHeader label={t('lamaran.colDate')} sortKey="applied_date" sort={sort} onSort={toggleSort} />
+                  <SortHeader label={t('lamaran.colStatus')} sortKey="current_status" sort={sort} onSort={toggleSort} />
                   <th className="p-3" />
                 </tr>
               </thead>
@@ -283,7 +286,7 @@ function FullList({ sources }: { sources: Source[] }) {
                       <div className="mt-1"><TaskBadge currentStatus={app.current_status} deadline={app.task_deadline} /></div>
                     </td>
                     <td className="p-3">
-                      <RowActions appId={app.id} open={openMenu === app.id} onToggle={() => setOpenMenu(openMenu === app.id ? null : app.id)} />
+                <RowActions appId={app.id} open={openMenu === app.id} onToggle={() => setOpenMenu(openMenu === app.id ? null : app.id)} t={t} lang={lang} />
                     </td>
                   </tr>
                 ))}
@@ -297,14 +300,16 @@ function FullList({ sources }: { sources: Source[] }) {
             total={data?.count ?? 0}
             pageSize={PAGE_SIZE}
             onPage={setPage}
+            t={t}
+            lang={lang}
           />
         </>
       )}
       <ConfirmDialog
         open={confirmBulk}
-        title="Hapus lamaran?"
-        message={`Hapus ${selected.size} lamaran terpilih? Tindakan tidak bisa dibatalkan.`}
-        confirmLabel="Hapus"
+        title={t('lamaran.delTitle')}
+        message={t('lamaran.bulkDelMsg').replace('{n}', String(selected.size))}
+        confirmLabel={t('common.delete')}
         onCancel={() => setConfirmBulk(false)}
         onConfirm={() => {
           setConfirmBulk(false)
@@ -339,12 +344,14 @@ function SortHeader({ label, sortKey, sort, onSort }: {
   )
 }
 
-function Pagination({ page, totalPages, total, pageSize, onPage }: {
+function Pagination({ page, totalPages, total, pageSize, onPage, t }: {
   page: number
   totalPages: number
   total: number
   pageSize: number
   onPage: (p: number) => void
+  t: (k: Key) => string
+  lang: Lang
 }) {
   if (total === 0) return null
   const from = total === 0 ? 0 : page * pageSize + 1
@@ -369,11 +376,11 @@ function Pagination({ page, totalPages, total, pageSize, onPage }: {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-sm text-stone">
-        Menampilkan <span className="font-semibold text-ink">{from}-{to}</span> dari{' '}
-        <span className="font-semibold text-ink">{total}</span> lamaran
+        {t('lamaran.showing')} <span className="font-semibold text-ink">{from}-{to}</span> {t('lamaran.ofWord')}{' '}
+        <span className="font-semibold text-ink">{total}</span> {t('lamaran.appsWord')}
       </p>
-      <nav className="flex items-center gap-1" aria-label="Paginasi">
-        <button type="button" onClick={() => onPage(Math.max(0, page - 1))} disabled={page === 0} className={cls(page === 0)} aria-label="Halaman sebelumnya">
+      <nav className="flex items-center gap-1" aria-label={t('lamaran.pagination')}>
+        <button type="button" onClick={() => onPage(Math.max(0, page - 1))} disabled={page === 0} className={cls(page === 0)} aria-label={t('lamaran.prevPage')}>
           <ChevronLeft size={16} />
         </button>
         {items.map((p, i) =>
@@ -393,7 +400,7 @@ function Pagination({ page, totalPages, total, pageSize, onPage }: {
             </button>
           ),
         )}
-        <button type="button" onClick={() => onPage(Math.min(totalPages - 1, page + 1))} disabled={page >= totalPages - 1} className={cls(page >= totalPages - 1)} aria-label="Halaman berikutnya">
+        <button type="button" onClick={() => onPage(Math.min(totalPages - 1, page + 1))} disabled={page >= totalPages - 1} className={cls(page >= totalPages - 1)} aria-label={t('lamaran.nextPage')}>
           <ChevronRight size={16} />
         </button>
       </nav>
@@ -401,7 +408,7 @@ function Pagination({ page, totalPages, total, pageSize, onPage }: {
   )
 }
 
-function RowActions({ appId, open, onToggle }: { appId: string; open: boolean; onToggle: () => void }) {
+function RowActions({ appId, open, onToggle, t }: { appId: string; open: boolean; onToggle: () => void; t: (k: Key) => string; lang: Lang }) {
   const btnRef = useRef<HTMLButtonElement>(null)
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -416,7 +423,7 @@ function RowActions({ appId, open, onToggle }: { appId: string; open: boolean; o
 
   return (
     <>
-      <button ref={btnRef} onClick={onToggle} aria-label="Tindakan" className="btn-ghost p-2">
+      <button ref={btnRef} onClick={onToggle} aria-label={t('lamaran.rowActions')} className="btn-ghost p-2">
         <MoreHorizontal size={18} />
       </button>
       {open && pos && (
@@ -427,10 +434,10 @@ function RowActions({ appId, open, onToggle }: { appId: string; open: boolean; o
             style={{ top: pos.top, left: pos.left }}
           >
             <Link href={`/lamaran/${appId}`} onClick={onToggle} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-ink hover:bg-surface-muted">
-              <Eye size={14} /> Lihat
+              <Eye size={14} /> {t('common.view')}
             </Link>
             <Link href={`/lamaran/${appId}/edit`} onClick={onToggle} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-ink hover:bg-surface-muted">
-              <Pencil size={14} /> Edit
+              <Pencil size={14} /> {t('common.edit')}
             </Link>
             <button
               onClick={() => {
@@ -439,15 +446,15 @@ function RowActions({ appId, open, onToggle }: { appId: string; open: boolean; o
               }}
               className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-ember hover:bg-ember/10"
             >
-              <Trash2 size={14} /> Hapus
+              <Trash2 size={14} /> {t('common.delete')}
             </button>
           </div>
         </>
       )}
       <ConfirmDialog
         open={confirmOpen}
-        title="Hapus lamaran?"
-        message="Lamaran ini akan dihapus permanen. Tindakan tidak bisa dibatalkan."
+        title={t('lamaran.delTitle')}
+        message={t('lamaran.delMsg')}
         onCancel={() => setConfirmOpen(false)}
         onConfirm={() => {
           setConfirmOpen(false)

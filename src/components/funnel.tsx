@@ -1,10 +1,15 @@
+'use client'
+
+import { useLang } from '@/components/language-provider'
+
 const stageColors = ['#3a5cd9', '#2f7fa8', '#19916c', '#d99a2b', '#d04444', '#5b6478']
 
 export function Funnel({ labels, values }: { labels: string[]; values: number[] }) {
+  const { t } = useLang()
   const max = Math.max(...values, 1)
   return (
     <section className="card p-4">
-      <h2 className="text-sm font-semibold text-ink">Persentase Proses</h2>
+      <h2 className="text-sm font-semibold text-ink">{t('stats.funnel')}</h2>
       <div className="mt-4 flex flex-col justify-center gap-3">
         {labels.map((label, i) => (
           <div key={label}>

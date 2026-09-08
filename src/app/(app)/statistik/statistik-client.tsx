@@ -10,9 +10,11 @@ import { StatCard } from '@/components/stat-card'
 import { MomentumChart } from '@/components/momentum-chart'
 import { Funnel } from '@/components/funnel'
 import { SourceList } from '@/components/source-list'
+import { useLang } from '@/components/language-provider'
 import type { Stats } from '@/lib/stats'
 
 export function StatistikClient({ initial }: { initial: Stats }) {
+  const { t } = useLang()
   const [range, setRange] = useState<Range>('30d')
 
   const { data } = useQuery({
@@ -26,15 +28,15 @@ export function StatistikClient({ initial }: { initial: Stats }) {
 
   return (
     <main className="p-4">
-      <PageHeader title="Kinerja" description="Pantau momentum, temukan hambatan, dan optimalkan strategi pelamaranmu.">
+      <PageHeader title={t('stats.title')} description={t('stats.desc')}>
         <RangeFilter range={range} onChange={setRange} />
       </PageHeader>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total Lamaran" value={String(s.total)} icon={<Send size={20} />} tone="primary" progress={Math.min(100, s.total)} />
-        <StatCard label="Interview" value={String(s.interviews)} icon={<MessagesSquare size={20} />} tone="moss" progress={Math.min(100, s.interviews * 4)} />
-        <StatCard label="Ditolak" value={String(s.rejected)} icon={<XCircle size={20} />} tone="ember" progress={Math.min(100, s.rejected * 4)} />
-        <StatCard solid label="Streak" value={`${s.streak}`} unit="Hari" icon={<Flame size={80} fill="currentColor" />} progress={100} />
+        <StatCard label={t('stats.total')} value={String(s.total)} icon={<Send size={20} />} tone="primary" progress={Math.min(100, s.total)} />
+        <StatCard label={t('stats.interviews')} value={String(s.interviews)} icon={<MessagesSquare size={20} />} tone="moss" progress={Math.min(100, s.interviews * 4)} />
+        <StatCard label={t('stats.rejected')} value={String(s.rejected)} icon={<XCircle size={20} />} tone="ember" progress={Math.min(100, s.rejected * 4)} />
+        <StatCard solid label={t('stats.streak')} value={`${s.streak}`} unit={t('stats.days')} icon={<Flame size={80} fill="currentColor" />} progress={100} />
       </section>
 
       <section className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">

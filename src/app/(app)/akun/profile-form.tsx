@@ -7,6 +7,7 @@ import { updateProfile } from './actions'
 import { signOut } from '@/app/auth-actions'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { toast } from '@/components/toast'
+import { useLang } from '@/components/language-provider'
 import type { UserSchema } from '@insforge/sdk'
 import type { Profile } from '@/lib/types'
 
@@ -14,6 +15,7 @@ const inputCls = 'field'
 const labelCls = 'mb-1 block text-sm font-medium text-ink'
 
 function SubmitButton() {
+  const { t } = useLang()
   const { pending } = useFormStatus()
   return (
     <button
@@ -21,12 +23,13 @@ function SubmitButton() {
       disabled={pending}
       className="btn-primary w-full"
     >
-      {pending ? 'Menyimpan...' : 'Simpan profil'}
+      {pending ? t('akun.saving') : t('akun.saveProfile')}
     </button>
   )
 }
 
 export function ProfileForm({ user, profile }: { user: UserSchema | null; profile: Profile | null }) {
+  const { t } = useLang()
   const initial = user?.profile?.name ?? profile?.full_name ?? ''
   const initialChar = (initial || user?.email || '?').charAt(0).toUpperCase()
   const [confirmLogout, setConfirmLogout] = useState(false)
@@ -35,7 +38,7 @@ export function ProfileForm({ user, profile }: { user: UserSchema | null; profil
   useEffect(() => {
     if (state === undefined) return
     if (state.error) return
-    toast('Profil disimpan')
+    toast(t('akun.toastSaved'))
   }, [state])
 
   return (
@@ -46,22 +49,22 @@ export function ProfileForm({ user, profile }: { user: UserSchema | null; profil
             {initialChar}
           </div>
           <div className="min-w-0">
-            <p className="truncate font-display text-lg font-bold text-ink">{initial || 'Belum ada nama'}</p>
+            <p className="truncate font-display text-lg font-bold text-ink">{initial || t('akun.noName')}</p>
             <p className="truncate text-sm text-stone">{user?.email}</p>
           </div>
         </div>
       </section>
 
       <form action={action} className="card p-4">
-        <h2 className="mb-4 font-display text-headline-sm text-ink">Profil</h2>
+        <h2 className="mb-4 font-display text-headline-sm text-ink">{t('akun.profileH')}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block sm:col-span-2">
-            <span className={labelCls}>Nama lengkap</span>
+            <span className={labelCls}>{t('akun.fullName')}</span>
             <input name="full_name" defaultValue={profile?.full_name ?? ''} className={inputCls} />
           </label>
           <label className="block sm:col-span-2">
-            <span className={labelCls}>Role yang dicari</span>
-            <input name="target_role" defaultValue={profile?.target_role ?? ''} className={inputCls} placeholder="cth. Frontend Developer" />
+            <span className={labelCls}>{t('akun.targetRole')}</span>
+            <input name="target_role" defaultValue={profile?.target_role ?? ''} className={inputCls} placeholder={t('akun.targetRolePh')} />
           </label>
           <label className="block sm:col-span-2">
             <span className={labelCls}>LinkedIn URL</span>
@@ -72,8 +75,8 @@ export function ProfileForm({ user, profile }: { user: UserSchema | null; profil
             <input type="url" name="portfolio_url" defaultValue={profile?.portfolio_url ?? ''} className={inputCls} placeholder="https://..." />
           </label>
           <label className="block sm:col-span-2">
-            <span className={labelCls}>Target gaji (Rp)</span>
-            <input type="number" name="salary_expectation" defaultValue={profile?.salary_expectation ?? ''} className={inputCls} placeholder="cth. 12000000" />
+            <span className={labelCls}>{t('akun.targetSalary')}</span>
+            <input type="number" name="salary_expectation" defaultValue={profile?.salary_expectation ?? ''} className={inputCls} placeholder={t('akun.salaryPh')} />
           </label>
         </div>
         {state?.error && <p className="mt-3 text-sm text-ember">{state.error}</p>}
@@ -84,13 +87,13 @@ export function ProfileForm({ user, profile }: { user: UserSchema | null; profil
 
       {/* Logout: desktop via sidebar; mobile only here */}
       <button type="button" onClick={() => setConfirmLogout(true)} className="btn-danger w-full md:hidden">
-        Keluar
+        {t('akun.logoutCta')}
       </button>
       <ConfirmDialog
         open={confirmLogout}
-        title="Keluar?"
-        message="Kamu akan keluar dari akun ini."
-        confirmLabel="Keluar"
+        title={t('nav.logoutTitle')}
+        message={t('nav.logoutMsg')}
+        confirmLabel={t('akun.logoutCta')}
         onCancel={() => setConfirmLogout(false)}
         onConfirm={() => {
           setConfirmLogout(false)

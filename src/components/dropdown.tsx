@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
+import { useLang } from '@/components/language-provider'
 
-export function Dropdown({ value, options, onChange, placeholder = 'Pilih', panelWidth }: {
+export function Dropdown({ value, options, onChange, placeholder, panelWidth }: {
   value: string
   options: { value: string; label: string }[]
   onChange: (v: string) => void
@@ -14,6 +15,8 @@ export function Dropdown({ value, options, onChange, placeholder = 'Pilih', pane
   const rootRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState<{ top: number; left: number; width: number } | null>(null)
+  const { t } = useLang()
+  const ph = placeholder ?? t('common.select')
 
   useEffect(() => {
     const place = () => {
@@ -54,7 +57,7 @@ export function Dropdown({ value, options, onChange, placeholder = 'Pilih', pane
         aria-expanded={open}
         className={`flex w-full items-center justify-between gap-2 rounded-md border border-line bg-surface px-2.5 py-2 text-left text-sm ${value ? 'text-ink' : 'text-stone'}`}
       >
-        <span className="truncate">{current ?? placeholder}</span>
+        <span className="truncate">{current ?? ph}</span>
         <ChevronDown size={16} className={`shrink-0 text-stone transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (

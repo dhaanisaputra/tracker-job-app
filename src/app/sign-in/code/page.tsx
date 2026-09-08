@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import { verifyOtp, resendOtp } from '@/app/auth-actions'
 import { ArrowLeft, RefreshCcw } from 'lucide-react'
 import { BrandMark } from '@/components/brand-mark'
+import { useLang } from '@/components/language-provider'
 
 const OTP_TTL = 300 // kode berlaku 5 menit (InsForge)
 
@@ -16,6 +17,7 @@ function formatTime(s: number) {
 }
 
 function CodeForm() {
+  const { t } = useLang()
   const searchParams = useSearchParams()
   const email = searchParams.get('email') ?? ''
   const [state, action, pending] = useActionState(verifyOtp, undefined)
@@ -42,15 +44,15 @@ function CodeForm() {
           <BrandMark size={22} />
           <span className="bg-gradient-to-r from-[#3a5cd9] to-[#2f7fa8] bg-clip-text text-sm font-semibold text-transparent">Lamaranku</span>
         </div>
-        <h1 className="font-display text-2xl font-bold text-ink mb-1">Cek email kamu</h1>
+        <h1 className="font-display text-2xl font-bold text-ink mb-1">{t('auth.codeTitle')}</h1>
         <p className="text-sm text-stone mb-6">
-          Kode 6 digit sudah dikirim ke <span className="font-medium text-ink">{email}</span>
+          {t('auth.codeSent')} <span className="font-medium text-ink">{email}</span>
         </p>
 
         <form action={action} className="space-y-4">
           <input type="hidden" name="email" value={email} />
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-ink">Kode masuk</span>
+            <span className="mb-1 block text-sm font-medium text-ink">{t('auth.codeLabel')}</span>
             <input
               type="text"
               name="otp"
@@ -70,7 +72,7 @@ function CodeForm() {
             disabled={pending}
             className="btn-primary w-full"
           >
-            {pending ? 'Memverifikasi...' : 'Masuk'}
+            {pending ? t('auth.verifying') : t('auth.signinCta')}
           </button>
         </form>
 
@@ -83,7 +85,7 @@ function CodeForm() {
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-line px-3 py-2 text-sm font-medium text-ink transition-colors hover:border-trailblaze/40 hover:text-trailblaze disabled:cursor-not-allowed disabled:opacity-40"
             >
               <RefreshCcw size={14} />
-              {resendPending ? 'Mengirim...' : expired ? 'Kirim Ulang Kode' : 'Kirim ulang dalam ' + formatTime(secondsLeft)}
+              {resendPending ? t('auth.sending') : expired ? t('auth.resend') : t('auth.resendIn') + formatTime(secondsLeft)}
             </button>
           </form>
           {resendState?.message && <p className="text-sm text-trailblaze">{resendState.message}</p>}
@@ -94,7 +96,7 @@ function CodeForm() {
             className="inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-stone transition-colors hover:text-ink"
           >
             <ArrowLeft size={14} />
-            Kembali ke masuk
+            {t('auth.backToSignin')}
           </Link>
         </div>
       </div>
@@ -102,9 +104,14 @@ function CodeForm() {
   )
 }
 
+function LoadingFallback() {
+  const { t } = useLang()
+  return <main className="flex min-h-dvh items-center justify-center text-sm text-stone">{t('auth.loading')}</main>
+}
+
 export default function SignInCodePage() {
   return (
-    <Suspense fallback={<main className="flex min-h-dvh items-center justify-center text-sm text-stone">Memuat...</main>}>
+    <Suspense fallback={<LoadingFallback />}>
       <CodeForm />
     </Suspense>
   )

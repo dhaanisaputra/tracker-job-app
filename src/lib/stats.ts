@@ -1,5 +1,7 @@
 import { serverDb } from '@/lib/server-db'
 import { calcStreak } from '@/lib/streak'
+import { getServerLang } from '@/lib/server-lang'
+import { dateLocale } from '@/lib/i18n'
 
 export type StatsRange = '7d' | '30d' | 'all'
 
@@ -17,6 +19,9 @@ const FUNNEL_STAGES = ['Applied', 'Screening', 'HR Interview', 'Technical Interv
 const INTERVIEW_STATUSES = ['HR Interview', 'Technical Interview']
 
 export async function getStats(range: StatsRange): Promise<Stats> {
+  const lang = await getServerLang()
+  const locale = dateLocale(lang)
+  const weekPrefix = lang === 'en' ? 'W' : 'M'
   const db = await serverDb()
 
   const now = new Date()
@@ -49,7 +54,7 @@ export async function getStats(range: StatsRange): Promise<Stats> {
   for (let i = buckets - 1; i >= 0; i--) {
     const bucketEnd = new Date(end.getTime() - i * stepMs)
     const bucketStart = new Date(bucketEnd.getTime() - stepMs)
-    labels.push(range === '7d' ? bucketStart.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) : `M${buckets - i}`)
+    labels.push(range === '7d' ? bucketStart.toLocaleDateString(locale, { day: '2-digit', month: 'short' }) : `${weekPrefix}${buckets - i}`)
     values.push(apps.filter((a) => { const d = new Date(a.applied_date); return d >= bucketStart && d < bucketEnd }).length)
   }
 

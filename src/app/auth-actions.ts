@@ -3,10 +3,13 @@
 import { cookies } from 'next/headers'
 import { createAuthActions } from '@insforge/sdk/ssr'
 import { redirect } from 'next/navigation'
+import { getServerLang } from '@/lib/server-lang'
+import { getDict } from '@/lib/i18n'
 
 export async function sendOtp(prev: { error?: string; message?: string } | undefined, formData: FormData) {
+  const t = getDict(await getServerLang())
   const email = String(formData.get('email') ?? '')
-  if (!email) return { error: 'Email is required' }
+  if (!email) return { error: t['auth.emailRequired'] }
 
   const auth = createAuthActions({ cookies: await cookies() })
   const { error } = await auth.signInWithOtp({ email })
@@ -17,6 +20,7 @@ export async function sendOtp(prev: { error?: string; message?: string } | undef
 }
 
 export async function verifyOtp(prev: { error?: string } | undefined, formData: FormData) {
+  const t = getDict(await getServerLang())
   const email = String(formData.get('email') ?? '')
   const otp = String(formData.get('otp') ?? '')
 
@@ -24,21 +28,22 @@ export async function verifyOtp(prev: { error?: string } | undefined, formData: 
   const { data, error } = await auth.verifyOtp({ email, otp })
 
   if (error) return { error: error.message }
-  if (!data?.user) return { error: 'Sign-in failed' }
+  if (!data?.user) return { error: t['auth.verifyFail'] }
 
   redirect('/dashboard')
 }
 
 export async function resendOtp(prev: { error?: string; message?: string } | undefined, formData: FormData) {
+  const t = getDict(await getServerLang())
   const email = String(formData.get('email') ?? '')
-  if (!email) return { error: 'Email is required' }
+  if (!email) return { error: t['auth.emailRequired'] }
 
   const auth = createAuthActions({ cookies: await cookies() })
   const { error } = await auth.signInWithOtp({ email })
 
   if (error) return { error: error.message }
 
-  return { message: 'Kode baru sudah dikirim ke email kamu' }
+  return { message: t['auth.resentOk'] }
 }
 
 export async function signOut() {

@@ -1,3 +1,7 @@
+'use client'
+
+import { useLang } from '@/components/language-provider'
+
 const fillByTone: Record<string, string> = {
   primary: 'bg-trailblaze',
   moss: 'bg-moss',
@@ -24,6 +28,7 @@ export function StatCard({ label, value, unit, icon, tone = 'primary', progress,
   progress?: number
   solid?: boolean
 }) {
+  const { t } = useLang()
   if (solid) {
     return (
       <div className="relative flex h-28 flex-col justify-between overflow-hidden rounded-lg bg-trailblaze p-4 text-white shadow-card">
@@ -31,7 +36,7 @@ export function StatCard({ label, value, unit, icon, tone = 'primary', progress,
         <span className="text-label-xs font-semibold uppercase tracking-wider text-white/80">{label}</span>
         <div className="flex flex-col">
           <span className="text-stat-lg font-bold">{value}{unit && <span className="ml-1 text-base font-medium text-white/85">{unit}</span>}</span>
-          <span className="mt-0.5 text-xs text-white/80">Pertahankan!</span>
+          <span className="mt-0.5 text-xs text-white/80">{t('stats.keepUp')}</span>
         </div>
       </div>
     )

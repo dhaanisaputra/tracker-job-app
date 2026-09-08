@@ -8,16 +8,17 @@ import { LayoutDashboard, Briefcase, BarChart3, Tags, User, ChevronsLeft, Chevro
 import { signOut } from '@/app/auth-actions'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { BrandMark } from '@/components/brand-mark'
-
-const items = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/lamaran', label: 'Lamaran', icon: Briefcase },
-  { href: '/statistik', label: 'Statistik', icon: BarChart3 },
-  { href: '/sumber', label: 'Sumber', icon: Tags },
-  { href: '/akun', label: 'Akun', icon: User },
-]
+import { useLang } from '@/components/language-provider'
 
 export function Nav({ user, streak }: { user: { email?: string | null; profile?: { name?: string | null } | null } | null; streak: number }) {
+  const { t } = useLang()
+  const items = [
+    { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { href: '/lamaran', label: t('nav.lamaran'), icon: Briefcase },
+    { href: '/statistik', label: t('nav.statistik'), icon: BarChart3 },
+    { href: '/sumber', label: t('nav.sumber'), icon: Tags },
+    { href: '/akun', label: t('nav.akun'), icon: User },
+  ]
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
   const [confirmLogout, setConfirmLogout] = useState(false)
@@ -81,7 +82,7 @@ export function Nav({ user, streak }: { user: { email?: string | null; profile?:
           <button
             type="button"
             onClick={toggleCollapse}
-            aria-label={collapsed ? 'Buka sidebar' : 'Tutup sidebar'}
+            aria-label={t(collapsed ? 'nav.openNav' : 'nav.closeNav')}
             className={`rounded-md text-slate-400 hover:bg-white/10 hover:text-white ${collapsed ? 'p-1' : 'ml-auto p-2'}`}
           >
             {collapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
@@ -90,7 +91,7 @@ export function Nav({ user, streak }: { user: { email?: string | null; profile?:
 
         {/* Nav links */}
         <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
-          <p className={`mb-1 px-2 text-label-xs font-semibold uppercase tracking-wider text-slate-400 ${collapsed ? 'hidden' : ''}`}>Menu</p>
+          <p className={`mb-1 px-2 text-label-xs font-semibold uppercase tracking-wider text-slate-400 ${collapsed ? 'hidden' : ''}`}>{t('nav.menu')}</p>
           {items.map(({ href, label, icon: Icon }) => {
             const active = isActive(href)
             return (
@@ -118,28 +119,28 @@ export function Nav({ user, streak }: { user: { email?: string | null; profile?:
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-white">{displayName}</p>
-                <p className="truncate text-xs text-slate-400">{streak} hari streak</p>
+                <p className="truncate text-xs text-slate-400">{streak} {t('nav.dayStreak')}</p>
               </div>
             </div>
           )}
           <button
             type="button"
             onClick={() => setConfirmLogout(true)}
-            title={collapsed ? 'Keluar' : undefined}
+            title={collapsed ? t('nav.logout') : undefined}
             className={`mt-1 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-400 transition hover:bg-ember/20 hover:text-red-300 ${
               collapsed ? 'justify-center px-0' : ''
             }`}
           >
-            <LogOut size={18} className="shrink-0" /> {!collapsed && 'Keluar'}
+            <LogOut size={18} className="shrink-0" /> {!collapsed && t('nav.logout')}
           </button>
         </div>
       </aside>
 
       <ConfirmDialog
         open={confirmLogout}
-        title="Keluar?"
-        message="Kamu akan keluar dari akun ini."
-        confirmLabel="Keluar"
+        title={t('nav.logoutTitle')}
+        message={t('nav.logoutMsg')}
+        confirmLabel={t('nav.logout')}
         onCancel={() => setConfirmLogout(false)}
         onConfirm={() => {
           setConfirmLogout(false)

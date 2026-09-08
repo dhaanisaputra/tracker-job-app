@@ -10,6 +10,7 @@ import { STATUSES } from '@/lib/types'
 import type { Source } from '@/lib/types'
 import { Modal } from '@/components/modal'
 import { toast } from '@/components/toast'
+import { useLang } from '@/components/language-provider'
 
 type Row = {
   company_name: string
@@ -25,6 +26,7 @@ type Row = {
 }
 
 export function BulkImport({ sources }: { sources: Source[] }) {
+  const { t } = useLang()
   const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const [rows, setRows] = useState<Row[]>([])
@@ -103,7 +105,7 @@ export function BulkImport({ sources }: { sources: Source[] }) {
       setError(err.message)
       return
     }
-    toast(`${valid.length} lamaran diimpor`)
+    toast(t('import.toastDone').replace('{n}', String(valid.length)))
     router.push('/dashboard')
     router.refresh()
   }
@@ -116,23 +118,23 @@ export function BulkImport({ sources }: { sources: Source[] }) {
           className="flex w-full flex-col items-center gap-2 rounded-lg border-2 border-dashed border-line bg-surface p-10 text-stone shadow-card hover:border-trailblaze"
         >
           {parsing ? <Loader2 className="animate-spin" /> : <FileUp size={28} />}
-          <span className="text-sm font-medium">{parsing ? 'Membaca file...' : 'Pilih file .xlsx atau .csv'}</span>
-          <span className="text-xs">Kolom: company_name, role_title, applied_date, status, source</span>
+          <span className="text-sm font-medium">{parsing ? t('import.reading') : t('import.pickFile')}</span>
+          <span className="text-xs">{t('import.cols')}</span>
         </button>
       ) : (
         <div className="space-y-3">
           <p className="text-sm text-stone">
-            {rows.length} baris dibaca. Baris kuning terindikasi duplikat, uncheck bila tak ingin diimport.
+            {t('import.rowsRead').replace('{n}', String(rows.length))}
           </p>
           <div className="max-h-96 overflow-auto card">
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-surface">
                 <tr className="text-left text-xs uppercase tracking-wide text-stone">
-                  <th className="p-2">Import</th>
-                  <th className="p-2">Perusahaan</th>
-                  <th className="p-2">Role</th>
-                  <th className="p-2">Tanggal</th>
-                  <th className="p-2">Status</th>
+                  <th className="p-2">{t('import.thImport')}</th>
+                  <th className="p-2">{t('import.thCompany')}</th>
+                  <th className="p-2">{t('lamaran.colRole')}</th>
+                  <th className="p-2">{t('import.thDate')}</th>
+                  <th className="p-2">{t('lamaran.colStatus')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -151,9 +153,9 @@ export function BulkImport({ sources }: { sources: Source[] }) {
             </table>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => { setRows([]); if (inputRef.current) inputRef.current.value = '' }} className="btn-secondary">Kembali</button>
+            <button onClick={() => { setRows([]); if (inputRef.current) inputRef.current.value = '' }} className="btn-secondary">{t('import.back')}</button>
             <button onClick={doImport} disabled={importing} className="btn-primary flex-1">
-              {importing ? 'Mengimport...' : `Import ${rows.filter((r) => r.checked).length} lamaran`}
+              {importing ? t('import.importing') : t('import.importBtn').replace('{n}', String(rows.filter((r) => r.checked).length))}
             </button>
           </div>
         </div>
@@ -167,7 +169,7 @@ export function BulkImport({ sources }: { sources: Source[] }) {
         onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
       />
 
-      <Modal open={!!error} onClose={() => setError('')} title="Gagal import">
+      <Modal open={!!error} onClose={() => setError('')} title={t('import.failTitle')}>
         <p className="text-sm text-ember">{error}</p>
         <div className="mt-5 flex justify-end">
           <button
@@ -175,7 +177,7 @@ export function BulkImport({ sources }: { sources: Source[] }) {
             onClick={() => setError('')}
             className="rounded-lg bg-trailblaze px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
           >
-            Tutup
+            {t('common.close')}
           </button>
         </div>
       </Modal>

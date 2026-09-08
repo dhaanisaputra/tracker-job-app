@@ -1,6 +1,7 @@
 'use client'
 
 import { Modal } from '@/components/modal'
+import { useLang } from '@/components/language-provider'
 
 type Props = {
   open: boolean
@@ -11,7 +12,9 @@ type Props = {
   onCancel: () => void
 }
 
-export function ConfirmDialog({ open, title, message, confirmLabel = 'Hapus', onConfirm, onCancel }: Props) {
+export function ConfirmDialog({ open, title, message, confirmLabel, onConfirm, onCancel }: Props) {
+  const { t } = useLang()
+  const label = confirmLabel ?? t('common.delete')
   return (
     <Modal open={open} onClose={onCancel} title={title}>
       <p className="text-sm text-stone">{message}</p>
@@ -21,14 +24,14 @@ export function ConfirmDialog({ open, title, message, confirmLabel = 'Hapus', on
           onClick={onCancel}
           className="btn-ghost"
         >
-          Batal
+          {t('common.cancel')}
         </button>
         <button
           type="button"
           onClick={onConfirm}
           className="btn-danger"
         >
-          {confirmLabel}
+          {label}
         </button>
       </div>
     </Modal>

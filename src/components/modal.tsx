@@ -2,8 +2,10 @@
 
 import { useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
+import { useLang } from '@/components/language-provider'
 
 export function Modal({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
+  const { t } = useLang()
   const panelRef = useRef<HTMLDivElement>(null)
   const lastFocused = useRef<HTMLElement | null>(null)
 
@@ -50,7 +52,7 @@ export function Modal({ open, onClose, title, children }: { open: boolean; onClo
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base font-semibold text-ink">{title}</h2>
-          <button onClick={onClose} aria-label="Tutup" className="rounded-md p-1.5 text-stone hover:bg-stone/10">
+          <button onClick={onClose} aria-label={t('modal.close')} className="rounded-md p-1.5 text-stone hover:bg-stone/10">
             <X size={18} />
           </button>
         </div>

@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, IBM_Plex_Mono } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css"
 import { QueryProvider } from '@/providers/query-client-provider'
+import { LanguageProvider } from '@/components/language-provider'
+import { getDict, parseLang } from '@/lib/i18n'
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -14,19 +17,22 @@ const plexMono = IBM_Plex_Mono({
   weight: ["400", "500", "600"],
 });
 
-export const metadata: Metadata = {
-  title: "Job Application Tracker",
-  description: "Track your job applications",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = parseLang((await cookies()).get('lang')?.value)
+  const d = getDict(lang)
+  return { title: d['meta.title'], description: d['meta.desc'] }
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const lang = parseLang((await cookies()).get('lang')?.value)
   return (
     <html
-      lang="id"
+      lang={lang}
+      data-lang={lang}
       suppressHydrationWarning
       className={`${jakarta.variable} ${plexMono.variable} bg-paper text-ink h-full antialiased`}
     >
@@ -48,7 +54,7 @@ export default function RootLayout({
         FIRST VIEWPORT: Dark slate sidebar (brand, search, Menu links, user) on desktop; mobile bottom bar; content led by a compact PageHeader with title and primary actions.
         FORM: CoreUI-style admin console, Restrained palette, Operate mode; seed direction pinned by owner brief.
         FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md */}
-        <QueryProvider>{children}</QueryProvider>
+        <LanguageProvider><QueryProvider>{children}</QueryProvider></LanguageProvider>
       </body>
     </html>
   );

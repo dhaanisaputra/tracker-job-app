@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { serverDb } from '@/lib/server-db'
+import { getServerLang } from '@/lib/server-lang'
+import { getDict, dateLocale } from '@/lib/i18n'
 import { ArrowLeft, ExternalLink, Pencil, MapPin, Calendar, User } from 'lucide-react'
 import { deleteApplication } from './actions'
 import { ConfirmDelete } from '@/components/confirm-delete'
@@ -32,23 +34,26 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
     .eq('application_id', id)
     .order('changed_at', { ascending: false })
 
-  if (!app) return <p className="p-4 text-sm text-stone">Lamaran tidak ditemukan.</p>
+  const lang = await getServerLang()
+  const t = getDict(lang)
+
+  if (!app) return <p className="p-4 text-sm text-stone">{t['lamaran.notFound']}</p>
 
   const fmt = (d: string | undefined) =>
-    d ? new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : ''
+    d ? new Date(d).toLocaleDateString(dateLocale(lang), { day: 'numeric', month: 'short', year: 'numeric' }) : ''
 
   return (
     <main className="p-4">
       <div className="mb-4 flex items-center justify-between">
         <Link href="/lamaran" className="inline-flex items-center gap-1 text-sm text-stone hover:text-ink">
-          <ArrowLeft size={16} /> Kembali
+          <ArrowLeft size={16} /> {t['common.back']}
         </Link>
         <div className="flex items-center gap-2">
           <Link
             href={`/lamaran/${id}/edit`}
             className="btn-secondary"
           >
-            <Pencil size={14} /> Edit
+            <Pencil size={14} /> {t['common.edit']}
           </Link>
           <ConfirmDelete action={deleteApplication} id={id} />
         </div>
@@ -70,7 +75,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
               rel="noreferrer"
               className="inline-flex items-center gap-1 text-xs font-medium text-denim hover:underline"
             >
-              Link lowongan <ExternalLink size={12} />
+              {t['lamaran.jobLink']} <ExternalLink size={12} />
             </a>
           )}
         </div>
@@ -78,35 +83,35 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
 
       <div className="grid gap-6 md:grid-cols-2">
         <section className="card p-4">
-          <h2 className="mb-3 font-display text-headline-sm text-ink">Detail</h2>
-          <Row label="Lokasi" value={app.location && <span className="flex items-center justify-end gap-1"><MapPin size={14} /> {app.location}</span>} />
-          <Row label="Tipe" value={app.employment_type} />
-          <Row label="Cara Kerja" value={app.work_arrangement} />
+          <h2 className="mb-3 font-display text-headline-sm text-ink">{t['lamaran.details']}</h2>
+          <Row label={t['lamaran.rowLocation']} value={app.location && <span className="flex items-center justify-end gap-1"><MapPin size={14} /> {app.location}</span>} />
+          <Row label={t['lamaran.rowType']} value={app.employment_type} />
+          <Row label={t['lamaran.rowArrangement']} value={app.work_arrangement} />
           <Row
-            label="Gaji"
+            label={t['lamaran.rowSalary']}
             value={
               app.salary_min != null || app.salary_max != null
                 ? `${app.salary_min != null ? app.salary_min : '?'} - ${app.salary_max != null ? app.salary_max : '?'}`
                 : undefined
             }
           />
-          <Row label="Nama rekruter" value={app.contact_person && <span className="flex items-center justify-end gap-1"><User size={14} /> {app.contact_person}</span>} />
-          <Row label="Interview dijadwalkan" value={app.interview_scheduled_at && new Date(app.interview_scheduled_at).toLocaleString('id-ID')} />
-          <Row label="Follow-up berikutnya" value={fmt(app.next_follow_up_date)} />
-          {app.offer_salary != null && <Row label="Nominal offer" value={app.offer_salary} />}
-          {app.offer_deadline && <Row label="Deadline offer" value={fmt(app.offer_deadline)} />}
+          <Row label={t['lamaran.rowRecruiter']} value={app.contact_person && <span className="flex items-center justify-end gap-1"><User size={14} /> {app.contact_person}</span>} />
+          <Row label={t['lamaran.rowInterview']} value={app.interview_scheduled_at && new Date(app.interview_scheduled_at).toLocaleString(dateLocale(lang))} />
+          <Row label={t['lamaran.rowFollowup']} value={fmt(app.next_follow_up_date)} />
+          {app.offer_salary != null && <Row label={t['lamaran.rowOfferAmount']} value={app.offer_salary} />}
+          {app.offer_deadline && <Row label={t['lamaran.rowOfferDeadline']} value={fmt(app.offer_deadline)} />}
         </section>
 
         <section className="space-y-6">
           {app.job_description && (
             <div className="card p-4">
-              <h2 className="mb-2 font-display text-headline-sm text-ink">Deskripsi Pekerjaan</h2>
+              <h2 className="mb-2 font-display text-headline-sm text-ink">{t['lamaran.jobDesc']}</h2>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink">{app.job_description}</p>
             </div>
           )}
           {app.notes && (
             <div className="card p-4">
-              <h2 className="mb-2 font-display text-headline-sm text-ink">Catatan</h2>
+              <h2 className="mb-2 font-display text-headline-sm text-ink">{t['lamaran.notesH']}</h2>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink">{app.notes}</p>
             </div>
           )}
@@ -114,7 +119,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
       </div>
 
       <section className="mt-6 card p-4">
-        <h2 className="mb-4 font-display text-headline-sm text-ink">Riwayat Status</h2>
+        <h2 className="mb-4 font-display text-headline-sm text-ink">{t['lamaran.history']}</h2>
         {history && history.length > 0 ? (
           <ol className="relative border-l border-line pl-4">
             {history.map((h) => (
@@ -122,7 +127,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                 <span className="absolute -left-1.5 mt-1.5 h-2 w-2 rounded-full bg-trailblaze" />
                 <StatusBadge status={h.status} />
                 <span className="ml-2 text-xs text-stone">
-                  {new Date(h.changed_at).toLocaleString('id-ID', {
+                  {new Date(h.changed_at).toLocaleString(dateLocale(lang), {
                     day: 'numeric',
                     month: 'short',
                     year: 'numeric',
@@ -134,7 +139,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
             ))}
           </ol>
         ) : (
-          <p className="text-sm text-stone">Belum ada riwayat status.</p>
+          <p className="text-sm text-stone">{t['lamaran.noHistory']}</p>
         )}
       </section>
     </main>
