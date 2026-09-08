@@ -154,11 +154,13 @@ npx -y @insforge/cli db query "SELECT COUNT(*) FROM application_status_history W
 # (+ hapus baris job_sources HANYA bila dibuat oleh test ini DAN tidak dipakai baris lain)
 ```
 
+Cleanup mengandalkan FK cascade; bila history count ≠ 0 setelah hapus baris application, jalankan `DELETE FROM application_status_history WHERE application_id='<uuid>'` dulu (atau verifikasi cascade), lalu cek ulang.
+
 Varian Telegram manual (workflow `apply-telegram` Active + kredensial bot terpasang): kirim `Perusahaan Test Live | Role Test Live` ke bot → harapan sama seperti di atas → cleanup dengan SQL yang sama.
 
 ### D. Publish 3 workflow (UI, ±5 menit)
 
-1. **Lepas dry_run DULU** (HANYA setelah uji §C hijau — produksi tanpa dry_run hanya setelah test hijau): di UI n8n, hapus `?dry_run=1` dari URL di **dua** node: `parse-job-url` → **HTTP Request Ingest**, dan `apply-telegram` → **HTTP Request IngestDirect**. (File repo masih `dry_run=ON` — disengaja sebagai default aman. Setelah publish sukses, ekspor ulang JSON dari UI dan commit agar file = produksi.)
+1. **Urutan live-test:** (1) hapus `?dry_run=1` dari URL di **dua** node: `parse-job-url` → **HTTP Request Ingest**, dan `apply-telegram` → **HTTP Request IngestDirect** di UI, (2) jalankan uji live §C, (3) biarkan off iff hijau + cleanup selesai, else kembalikan `?dry_run=1`. (File repo masih `dry_run=ON` — disengaja sebagai default aman. Setelah publish sukses, ekspor ulang JSON dari UI dan commit agar file = produksi.)
 2. **Pasang kredensial**: Telegram (semua node Telegram di `apply-bookmarklet` + `apply-telegram`, lihat §4), LLM/Gemini (node **Information Extractor ParseJob** di `parse-job-url`, lihat §5), header `x-ingest-secret` (kedua node HTTP di atas + workflow fase 1, lihat §6).
 3. **Aktifkan**: toggle **Active** untuk `parse-job-url` (diekspos sebagai sub-workflow), `apply-bookmarklet`, `apply-telegram`. Versi UI: beri catatan `v1 - capture produksi` bila n8n meminta nama/versi saat publish.
 4. **Pasang error-alarm**: di tiap workflow fase 2 → **Settings** (⚙️) → **Error Workflow** → pilih `error-alarm` → **Save** (cara sama seperti §9).
