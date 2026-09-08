@@ -26,15 +26,15 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "debug-apply",
-        "responseMode": "lastNode",
-        "webhookId": "debug-apply"
+        "responseMode": "lastNode"
       },
       "position": [
         200,
         300
       ],
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2
+      "typeVersion": 2,
+      "webhookId": "debug-apply"
     },
     {
       "id": "a1b2c3d4-0000-4000-8000-000000000002",
