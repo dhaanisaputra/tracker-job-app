@@ -20,6 +20,23 @@ D. ALARM: Error Trigger ──► error-alarm ──► Telegram (terpasang di s
 Prinsip: satu pintu tulis (`n8n-ingest`), matcher konservatif (ambigu → `needs_review`,
 bukan tebak), Telegram satu arah (notif saja), tanpa tunnel/VPS/biaya baru.
 
+## Korelasi n8n ↔ Backend API
+
+Satu-satunya API backend yang disentuh n8n adalah **edge function** (kolom kanan).
+n8n TIDAK memanggil REST tabel langsung — RLS `auth.uid() = user_id` menolaknya
+(n8n tidak punya JWT user; anon key tidak cukup).
+
+| Pemanggil (n8n) | Endpoint BE | Tujuan | Tabel terdampak |
+|---|---|---|---|
+| HTTP Ingest (parse-job-url) | `POST /functions/n8n-ingest` | Upsert lamaran (create/update/needs_review) | `job_applications`, `sources` (+`application_status_history` via trigger) |
+| HTTP IngestDirect (apply-telegram) | `POST /functions/n8n-ingest` | Sama, untuk format manual `Perusahaan \| Role` | sama |
+| HTTP Summary (daily-summary) | `GET /functions/n8n-ingest?action=summary` | Rekap per status, 24 jam, deadline | baca 3 tabel di atas |
+| — | `POST /rest/v1/*` (PostgREST) | TIDAK dipakai n8n (RLS) | — |
+
+Alur tulis: n8n (secret) → function validasi → admin client → Postgres.
+App Next.js sebaliknya memakai SDK + JWT user (RLS aktif) — dua jalur berbeda,
+tidak saling mengganggu.
+
 ## Backend: edge function `n8n-ingest`
 
 - Auth: header `x-ingest-secret` (secret `N8N_INGEST_SECRET`); admin key hanya di function.
